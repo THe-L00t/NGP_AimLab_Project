@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Game">
+    <Filter Include="Common">
+      <UniqueIdentifier>{a1d3c2f0-1b1e-4c5a-9a10-000000000010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Game">
       <UniqueIdentifier>{a1d3c2f0-1b1e-4c5a-9a10-000000000001}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core">
@@ -30,8 +33,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game\World.cpp">
-      <Filter>Game</Filter>
+    <ClCompile Include="..\Common\Game\World.cpp">
+      <Filter>Common\Game</Filter>
     </ClCompile>
     <ClCompile Include="Core\App.cpp">
       <Filter>Core</Filter>
@@ -83,17 +86,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game\AimMath.h">
-      <Filter>Game</Filter>
+    <ClInclude Include="..\Common\Game\AimMath.h">
+      <Filter>Common\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameConfig.h">
-      <Filter>Game</Filter>
+    <ClInclude Include="..\Common\Game\GameConfig.h">
+      <Filter>Common\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameTypes.h">
-      <Filter>Game</Filter>
+    <ClInclude Include="..\Common\Game\GameTypes.h">
+      <Filter>Common\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\World.h">
-      <Filter>Game</Filter>
+    <ClInclude Include="..\Common\Game\World.h">
+      <Filter>Common\Game</Filter>
     </ClInclude>
     <ClInclude Include="Core\App.h">
       <Filter>Core</Filter>

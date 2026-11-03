@@ -47,6 +47,7 @@
   <PropertyGroup>
     <RepoDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\</RepoDir>
     <ExternalDir>$(RepoDir)External\</ExternalDir>
+    <!-- 서버와 같이 쓰는 게임 로직(World)·프로토콜은 저장소 루트의 Common/에 있다 -->
     <!-- 실행 파일은 저장소 루트의 x64\Debug (또는 Release)에 모인다 -->
     <OutDir>$(RepoDir)x64\$(Configuration)\</OutDir>
     <IntDir>$(RepoDir)x64\$(Configuration)\obj\$(ProjectName)\</IntDir>
@@ -59,7 +60,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);$(ExternalDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);$(RepoDir)Common;$(ExternalDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;NOMINMAX;WIN32_LEAN_AND_MEAN;FREEGLUT_LIB_PRAGMAS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -101,7 +102,7 @@
   <ItemGroup>
     <ClCompile Include="Core\App.cpp" />
     <ClCompile Include="Effects\DebrisSystem.cpp" />
-    <ClCompile Include="Game\World.cpp" />
+    <ClCompile Include="..\Common\Game\World.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Render\Camera.cpp" />
@@ -122,10 +123,10 @@
     <ClInclude Include="Core\Palette.h" />
     <ClInclude Include="Core\Settings.h" />
     <ClInclude Include="Effects\DebrisSystem.h" />
-    <ClInclude Include="Game\AimMath.h" />
-    <ClInclude Include="Game\GameConfig.h" />
-    <ClInclude Include="Game\GameTypes.h" />
-    <ClInclude Include="Game\World.h" />
+    <ClInclude Include="..\Common\Game\AimMath.h" />
+    <ClInclude Include="..\Common\Game\GameConfig.h" />
+    <ClInclude Include="..\Common\Game\GameTypes.h" />
+    <ClInclude Include="..\Common\Game\World.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\GL.h" />

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Server">
+      <UniqueIdentifier>{b2e4d3a1-2c2f-4d6b-8b21-000000000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{b2e4d3a1-2c2f-4d6b-8b21-000000000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Game">
+      <UniqueIdentifier>{b2e4d3a1-2c2f-4d6b-8b21-000000000003}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp"><Filter>Server</Filter></ClCompile>
+    <ClCompile Include="..\Common\Game\World.cpp"><Filter>Common\Game</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Game\AimMath.h"><Filter>Common\Game</Filter></ClInclude>
+    <ClInclude Include="..\Common\Game\GameConfig.h"><Filter>Common\Game</Filter></ClInclude>
+    <ClInclude Include="..\Common\Game\GameTypes.h"><Filter>Common\Game</Filter></ClInclude>
+    <ClInclude Include="..\Common\Game\World.h"><Filter>Common\Game</Filter></ClInclude>
+  </ItemGroup>
+</Project>
