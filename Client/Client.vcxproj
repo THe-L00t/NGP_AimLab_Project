@@ -127,6 +127,7 @@
     <ClInclude Include="..\Common\Game\GameConfig.h" />
     <ClInclude Include="..\Common\Game\GameTypes.h" />
     <ClInclude Include="..\Common\Game\World.h" />
+    <ClInclude Include="..\Common\Net\Protocol.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\GL.h" />

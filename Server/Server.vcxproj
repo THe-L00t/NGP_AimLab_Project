@@ -93,6 +93,7 @@
     <ClInclude Include="..\Common\Game\GameConfig.h" />
     <ClInclude Include="..\Common\Game\GameTypes.h" />
     <ClInclude Include="..\Common\Game\World.h" />
+    <ClInclude Include="..\Common\Net\Protocol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

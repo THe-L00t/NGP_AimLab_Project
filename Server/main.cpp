@@ -1,5 +1,6 @@
 #include <windows.h>  // SetConsoleOutputCP
 #include "Game/World.h"
+#include "Net/Protocol.h"   // 패킷 크기 static_assert 검사
 #include <iostream>
 
 // AimLab 서버. 게임 판정·계산은 모두 여기서 Common/Game/World로 한다.
