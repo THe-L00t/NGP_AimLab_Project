@@ -152,6 +152,7 @@
     <ClInclude Include="Session.h">
       <Filter>Session</Filter>
     </ClInclude>
+    <ClInclude Include="Snapshot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\lit.frag">
