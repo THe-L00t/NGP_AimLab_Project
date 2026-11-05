@@ -1,4 +1,4 @@
-#include "Core/App.h"
+﻿#include "Core/App.h"
 #include "Game/AimMath.h"
 #include "Core/Palette.h"
 #include "Render/GL.h"
@@ -102,7 +102,7 @@ void App::frame() {
         std::cout << "마우스 시점 " << (input_.mouseLookEnabled() ? "켜짐" : "꺼짐 (Esc로 다시 켜기)") << "\n";
     }
 
-    world_.tick(dt);
+    session_.update(dt);
     handleEvents();
     debris_.update(dt, cfg::kRoomFloorY);
     if (settings_.infoTimer > 0.0f) settings_.infoTimer -= dt;

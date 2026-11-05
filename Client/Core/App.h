@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // 프로그램 뼈대: GLUT 창·메인 루프를 돌리고, 각 시스템과 게임 로직(World)을 가지고 있다.
 //
 // 한 프레임 순서 (frame):
@@ -9,6 +9,7 @@
 #include "Game/GameTypes.h"
 #include "Game/World.h"
 #include "Input/InputManager.h"
+#include "LocalSession.h"
 #include "Render/Camera.h"
 #include "Render/Renderer.h"
 #include "Scene/SceneManager.h"
@@ -23,6 +24,7 @@ public:
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }
     World& world() { return world_; }
+    Session& session() { return session_; }
     Camera& camera() { return camera_; }
     DebrisSystem& debris() { return debris_; }
     Settings& settings() { return settings_; }
@@ -45,6 +47,7 @@ private:
     InputManager input_;
     Renderer renderer_;
     World world_;
+    LocalSession session_{ world_ };
     Camera camera_;
     DebrisSystem debris_;
     Settings settings_;
