@@ -103,6 +103,7 @@
     <ClCompile Include="Effects\DebrisSystem.cpp" />
     <ClCompile Include="Game\World.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="LocalSession.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Render\Camera.cpp" />
     <ClCompile Include="Render\GunModel.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="Game\GameTypes.h" />
     <ClInclude Include="Game\World.h" />
     <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="LocalSession.h" />
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\GL.h" />
     <ClInclude Include="Render\GunModel.h" />
