@@ -1,7 +1,8 @@
-#include "Scene/SceneCommon.h"
+﻿#include "Scene/SceneCommon.h"
 #include "Game/AimMath.h"
 #include "Core/App.h"
 #include "Core/Palette.h"
+#include "Snapshot.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <cstdarg>
@@ -54,18 +55,18 @@ void handleCommonKeys(App& app, bool allowSettings) {
 
 void drawWorld(App& app, float bossFlash) {
     Renderer& r = app.renderer();
-    const World& w = app.world();
+    const Snapshot& s = app.session().snapshot();
 
     r.beginFrame(app.camera());
     r.drawRoom();
 
     // 표적 (따라가는 중이면 빨강)
-    for (const World::Target& t : w.targets()) {
+    for (const TargetState& t : s.targets) {
         r.drawSphere(t.pos, t.radius, t.progress > 0.0f ? palette::kTracked : palette::kTarget);
     }
 
     // 보스
-    const World::Boss& boss = w.boss();
+    const BossState& boss = s.boss;
     if (boss.alive) {
         const glm::vec3 base = boss.shield ? palette::kShield : palette::kBoss;   // 보호막 중이면 하늘색
         const glm::vec3 color = glm::mix(base, palette::kWhite, std::clamp(bossFlash, 0.0f, 1.0f));
@@ -83,7 +84,7 @@ void drawWorld(App& app, float bossFlash) {
     }
 
     // 따라가는 표적 위의 타이머 바 (원본과 같게 남은 시간만큼, 초록 → 빨강)
-    for (const World::Target& t : w.targets()) {
+    for (const TargetState& t : s.targets) {
         if (t.progress <= 0.0f) continue;
         const float done = std::min(1.0f, t.progress / cfg::kTrackHoldTime);
         const glm::vec3 pos = t.pos + glm::vec3(0.0f, t.radius + 0.3f, 0.0f);

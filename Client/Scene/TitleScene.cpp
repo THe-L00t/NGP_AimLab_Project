@@ -1,9 +1,10 @@
-#include "Scene/TitleScene.h"
+﻿#include "Scene/TitleScene.h"
 #include "Game/AimMath.h"
 #include "Core/App.h"
 #include "Core/Palette.h"
 #include "Scene/GameScene.h"
 #include "Scene/SceneCommon.h"
+#include "Snapshot.h"
 #include <iostream>
 
 void TitleScene::onEnter(App& app) {
@@ -13,9 +14,9 @@ void TitleScene::onEnter(App& app) {
 }
 
 void TitleScene::update(App& app, float) {
-    World& w = app.world();
+    const Snapshot& s = app.session().snapshot();
     // 게임이 시작되면 게임 씬으로
-    if (w.phase() != Phase::Title) {
+    if (s.phase != Phase::Title) {
         app.scenes().change(std::make_unique<GameScene>());
         return;
     }
@@ -24,7 +25,7 @@ void TitleScene::update(App& app, float) {
     scene::handleCommonKeys(app, true);
 
     if (app.input().keyPressed('r')) {
-        w.start();
+        app.world().start();   // 명령은 아직 World로 직접
         std::cout << "게임 시작\n";
     }
 }
