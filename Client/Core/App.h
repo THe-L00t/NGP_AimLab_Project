@@ -10,10 +10,12 @@
 #include "Game/World.h"
 #include "Input/InputManager.h"
 #include "LocalSession.h"
+#include "NetSession.h"
 #include "Render/Camera.h"
 #include "Render/Renderer.h"
 #include "Scene/SceneManager.h"
 #include <chrono>
+#include <memory>
 #include <vector>
 
 class App {
@@ -24,7 +26,8 @@ public:
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }
     World& world() { return world_; }
-    Session& session() { return session_; }
+    LocalSession& session() { return session_; }
+    std::unique_ptr<NetSession> net_;
     Camera& camera() { return camera_; }
     DebrisSystem& debris() { return debris_; }
     Settings& settings() { return settings_; }

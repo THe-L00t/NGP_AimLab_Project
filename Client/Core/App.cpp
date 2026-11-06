@@ -5,6 +5,7 @@
 #include "Scene/TitleScene.h"
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 App* App::s_app = nullptr;
 
@@ -16,6 +17,18 @@ constexpr int kFrameMs = 16;   // 약 60fps
 
 int App::run(int argc, char** argv) {
     s_app = this;
+
+    std::string serverIp;
+    std::string nickname = "Player";
+    for (int i = 1; i + 1 < argc; ++i) {
+        const std::string arg = argv[i];
+        if (arg == "--server") serverIp = argv[++i];
+        else if (arg == "--name") nickname = argv[++i];
+    }
+    if (!serverIp.empty()) {
+        net_ = std::make_unique<NetSession>(nickname);
+        net_->StartNetwork(serverIp.c_str(), SERVER_PORT);
+    }
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -103,6 +116,7 @@ void App::frame() {
     }
 
     session_.update(dt);
+    if (net_) net_->update(dt);
     handleEvents();
     debris_.update(dt, cfg::kRoomFloorY);
     if (settings_.infoTimer > 0.0f) settings_.infoTimer -= dt;
