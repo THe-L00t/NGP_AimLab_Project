@@ -26,8 +26,7 @@ public:
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }
     World& world() { return world_; }
-    LocalSession& session() { return session_; }
-    std::unique_ptr<NetSession> net_;
+    Session& session() { return session_; }
     Camera& camera() { return camera_; }
     DebrisSystem& debris() { return debris_; }
     Settings& settings() { return settings_; }
@@ -51,6 +50,7 @@ private:
     Renderer renderer_;
     World world_;
     LocalSession session_{ world_ };
+    std::unique_ptr<NetSession> net_;
     Camera camera_;
     DebrisSystem debris_;
     Settings settings_;
