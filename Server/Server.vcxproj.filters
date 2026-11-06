@@ -16,6 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp"><Filter>Server</Filter></ClCompile>
+    <ClCompile Include="Server.cpp"><Filter>Server</Filter></ClCompile>
+    <ClCompile Include="Stub.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="..\Common\Game\World.cpp"><Filter>Common\Game</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -24,5 +26,6 @@
     <ClInclude Include="..\Common\Game\GameTypes.h"><Filter>Common\Game</Filter></ClInclude>
     <ClInclude Include="..\Common\Game\World.h"><Filter>Common\Game</Filter></ClInclude>
     <ClInclude Include="..\Common\Net\Protocol.h"><Filter>Common\Net</Filter></ClInclude>
+    <ClInclude Include="Server.h"><Filter>Server</Filter></ClInclude>
   </ItemGroup>
 </Project>
