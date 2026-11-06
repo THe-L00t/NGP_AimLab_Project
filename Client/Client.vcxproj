@@ -105,6 +105,7 @@
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="LocalSession.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetSession.cpp" />
     <ClCompile Include="Render\Camera.cpp" />
     <ClCompile Include="Render\GunModel.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="Game\World.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="LocalSession.h" />
+    <ClInclude Include="NetSession.h" />
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\GL.h" />
     <ClInclude Include="Render\GunModel.h" />
