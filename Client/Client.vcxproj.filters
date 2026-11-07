@@ -87,6 +87,8 @@
     <ClCompile Include="Session.cpp">
       <Filter>Session</Filter>
     </ClCompile>
+    <ClCompile Include="LocalSession.cpp" />
+    <ClCompile Include="NetSession.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Game\AimMath.h">
@@ -161,6 +163,9 @@
     <ClInclude Include="Session.h">
       <Filter>Session</Filter>
     </ClInclude>
+    <ClInclude Include="Snapshot.h" />
+    <ClInclude Include="LocalSession.h" />
+    <ClInclude Include="NetSession.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\lit.frag">

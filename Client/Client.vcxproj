@@ -104,7 +104,9 @@
     <ClCompile Include="Effects\DebrisSystem.cpp" />
     <ClCompile Include="..\Common\Game\World.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="LocalSession.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetSession.cpp" />
     <ClCompile Include="Render\Camera.cpp" />
     <ClCompile Include="Render\GunModel.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
@@ -129,6 +131,8 @@
     <ClInclude Include="..\Common\Game\World.h" />
     <ClInclude Include="..\Common\Net\Protocol.h" />
     <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="LocalSession.h" />
+    <ClInclude Include="NetSession.h" />
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\GL.h" />
     <ClInclude Include="Render\GunModel.h" />
@@ -143,6 +147,7 @@
     <ClInclude Include="Scene\SceneManager.h" />
     <ClInclude Include="Scene\TitleScene.h" />
     <ClInclude Include="Session.h" />
+    <ClInclude Include="Snapshot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\lit.frag" />

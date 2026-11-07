@@ -1,10 +1,11 @@
-#include "Core/App.h"
+﻿#include "Core/App.h"
 #include "Game/AimMath.h"
 #include "Core/Palette.h"
 #include "Render/GL.h"
 #include "Scene/TitleScene.h"
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 App* App::s_app = nullptr;
 
@@ -16,6 +17,18 @@ constexpr int kFrameMs = 16;   // 약 60fps
 
 int App::run(int argc, char** argv) {
     s_app = this;
+
+    std::string serverIp;
+    std::string nickname = "Player";
+    for (int i = 1; i + 1 < argc; ++i) {
+        const std::string arg = argv[i];
+        if (arg == "--server") serverIp = argv[++i];
+        else if (arg == "--name") nickname = argv[++i];
+    }
+    if (!serverIp.empty()) {
+        net_ = std::make_unique<NetSession>(nickname);
+        net_->StartNetwork(serverIp.c_str(), SERVER_PORT);
+    }
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -102,7 +115,8 @@ void App::frame() {
         std::cout << "마우스 시점 " << (input_.mouseLookEnabled() ? "켜짐" : "꺼짐 (Esc로 다시 켜기)") << "\n";
     }
 
-    world_.tick(dt);
+    session_.update(dt);
+    if (net_) net_->update(dt);
     handleEvents();
     debris_.update(dt, cfg::kRoomFloorY);
     if (settings_.infoTimer > 0.0f) settings_.infoTimer -= dt;
