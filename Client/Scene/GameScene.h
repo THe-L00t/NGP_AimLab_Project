@@ -1,6 +1,5 @@
 #pragma once
-// 인게임: 1라운드 GridShot → 2라운드 Tracking → 3라운드 Boss.
-// 라운드 시작 카운트다운·진행·라운드 결과까지 이 씬이 맡고, 단계는 로직(World::phase)을 따른다.
+// 인게임: 카운트다운·라운드 진행·라운드 결과
 #include "Game/GameTypes.h"
 #include "Scene/Scene.h"
 
@@ -18,6 +17,6 @@ private:
     void drawSummary(App& app);
 
     Phase lastPhase_ = Phase::Title;
-    bool triggerHeld_ = false;   // Tracking: 로직에 '누르고 있음'을 알린 상태
+    bool triggerHeld_ = false;   // 마지막으로 알린 누름 상태
     float bossFlash_ = 0.0f;
 };

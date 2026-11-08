@@ -27,7 +27,7 @@ void Mesh::create(const std::vector<float>& vertices, int stride,
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, bytes, (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
     }
-    if (stride >= 8) {   // 텍스처 좌표 (총 모델)
+    if (stride >= 8) {   // 텍스처 좌표
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, bytes, (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
     }
@@ -73,7 +73,7 @@ void sphere(int sectors, int stacks, std::vector<float>& v, std::vector<unsigned
             const float a = j * sectorStep;
             const float x = xy * std::cos(a);
             const float y = xy * std::sin(a);
-            push(v, x, y, z, x, y, z);  // 반지름 1 → 위치가 곧 법선
+            push(v, x, y, z, x, y, z);  // 위치 = 법선
         }
     }
     for (int i = 0; i < stacks; ++i) {
@@ -116,7 +116,7 @@ void cube(std::vector<float>& v, std::vector<unsigned>& idx) {
 }
 
 void room(float w, float h, float d, float floorY, std::vector<float>& v) {
-    // 원본 ShootingBox와 같은 상자. 법선은 방 안쪽을 향한다.
+    // 법선은 안쪽
     v.clear();
     const float hw = w / 2, hd = d / 2;
     const float y0 = floorY, y1 = floorY + h;

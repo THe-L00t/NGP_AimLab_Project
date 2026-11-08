@@ -2,6 +2,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include "Net/Protocol.h"
+#include "Net/SendPacket.h"
 #include <array>
 #include <cstdint>
 #include <memory>

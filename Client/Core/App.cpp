@@ -1,4 +1,4 @@
-﻿#include "Core/App.h"
+#include "Core/App.h"
 #include "Game/AimMath.h"
 #include "Core/Palette.h"
 #include "Render/GL.h"
@@ -18,16 +18,11 @@ constexpr int kFrameMs = 16;   // 약 60fps
 int App::run(int argc, char** argv) {
     s_app = this;
 
-    std::string serverIp;
-    std::string nickname = "Player";
-    for (int i = 1; i + 1 < argc; ++i) {
-        const std::string arg = argv[i];
-        if (arg == "--server") serverIp = argv[++i];
-        else if (arg == "--name") nickname = argv[++i];
-    }
-    if (!serverIp.empty()) {
+    // AimLab.exe <서버 IP> <별명>, 인수가 없으면 1인 모드
+    if (argc >= 2) {
+        const std::string nickname = argc >= 3 ? argv[2] : "Player";
         net_ = std::make_unique<NetSession>(nickname);
-        net_->StartNetwork(serverIp.c_str(), SERVER_PORT);
+        net_->StartNetwork(argv[1], SERVER_PORT);
     }
 
     glutInit(&argc, argv);
@@ -35,7 +30,7 @@ int App::run(int argc, char** argv) {
     glutInitWindowPosition(50, 50);
     glutInitWindowSize(kInitialWidth, kInitialHeight);
     glutCreateWindow("AimLab");
-    // 창을 닫아도 프로그램을 바로 끝내지 않고 glutMainLoop가 돌아오게 해서 정리할 기회를 만든다
+    // 창을 닫으면 glutMainLoop가 돌아오게 한다 (정리용)
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
     glewExperimental = GL_TRUE;
@@ -62,7 +57,7 @@ int App::run(int argc, char** argv) {
 
     glutMainLoop();
 
-    releaseGraphics();   // 보통은 closeCallback에서 이미 정리됨
+    releaseGraphics();
     std::cout << "종료\n";
     return 0;
 }
@@ -89,7 +84,7 @@ void App::timerCallback(int) {
 }
 
 void App::closeCallback() {
-    // 창이 사라지기 직전 (GL 컨텍스트가 아직 살아 있을 때) GPU 자원을 정리한다
+    // GL 컨텍스트가 살아 있을 때 정리
     if (s_app) {
         s_app->quitting_ = true;
         s_app->releaseGraphics();
@@ -108,10 +103,10 @@ void App::frame() {
     const auto now = std::chrono::steady_clock::now();
     float dt = std::chrono::duration<float>(now - lastTime_).count();
     lastTime_ = now;
-    dt = std::min(dt, 0.1f);   // 창을 끌거나 멈췄다 돌아와도 한 번에 크게 튀지 않게
+    dt = std::min(dt, 0.1f);
 
     input_.beginFrame();
-    if (input_.keyPressed(27)) {   // Esc: 마우스 시점 켜기/끄기 (창 밖으로 마우스를 빼고 싶을 때)
+    if (input_.keyPressed(27)) {   // Esc: 마우스 놓기/잡기
         input_.setMouseLook(!input_.mouseLookEnabled());
         std::cout << "마우스 시점 " << (input_.mouseLookEnabled() ? "켜짐" : "꺼짐 (Esc로 다시 켜기)") << "\n";
     }

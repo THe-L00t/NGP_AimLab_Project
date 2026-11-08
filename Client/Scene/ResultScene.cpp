@@ -1,4 +1,4 @@
-﻿#include "Scene/ResultScene.h"
+#include "Scene/ResultScene.h"
 #include "Core/App.h"
 #include "Core/Palette.h"
 #include "Scene/SceneCommon.h"
@@ -49,7 +49,7 @@ void ResultScene::render(App& app) {
     r.drawTextCentered(cx, y, scene::format("SCORE  %d", s.score), palette::kWhite, Font::Large);
     y -= 45.0f;
 
-    // 라운드별 점수 (실패한 뒤 라운드는 하지 않았다)
+    // 라운드별 점수
     for (int rr = 0; rr < cfg::kRoundCount; ++rr) {
         const bool played = allClear || rr <= s.failedRound;
         r.drawText(left + 130.0f, y, scene::format("R%d  %s", rr + 1, roundName(kRoundOrder[rr])), palette::kGray);

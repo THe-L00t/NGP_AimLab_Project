@@ -1,9 +1,9 @@
-﻿#include "LocalSession.h"
+#include "LocalSession.h"
 #include "Game/World.h"
 
 LocalSession::LocalSession(World& world)
     : world_(world) {
-    copyState();   // 첫 프레임 전에도 화면이 읽을 상태가 있게
+    copyState();
 }
 
 void LocalSession::update(float dt) {

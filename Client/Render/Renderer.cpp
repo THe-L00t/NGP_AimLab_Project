@@ -4,8 +4,8 @@
 #include <iostream>
 
 namespace {
-const glm::vec3 kRoomColor(0.3f, 0.3f, 0.3f);          // 원본 ShootingBox 색
-const glm::vec3 kLightPos(0.0f, 12.0f, 0.0f);          // 원본 Light의 주 조명
+const glm::vec3 kRoomColor(0.3f, 0.3f, 0.3f);
+const glm::vec3 kLightPos(0.0f, 12.0f, 0.0f);
 const glm::vec3 kLightColor(1.0f, 1.0f, 1.0f);
 }
 
@@ -51,9 +51,7 @@ void Renderer::resize(int width, int height) {
     ortho_ = glm::ortho(0.0f, (float)width_, 0.0f, (float)height_, -1.0f, 1.0f);
 }
 
-// ============================================================
-// 3D
-// ============================================================
+// ---- 3D ----
 
 void Renderer::beginFrame(const Camera& cam) {
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
@@ -75,7 +73,7 @@ void Renderer::useLit(const glm::mat4& view, const glm::vec3& lightPos, const gl
     lit_.setVec3("lightPos", lightPos);
     lit_.setVec3("lightColor", kLightColor);
     lit_.setVec3("viewPos", viewPos);
-    lit_.setInt("useTexture", 0);   // 기본은 단색. 텍스처는 총을 그릴 때만 켠다
+    lit_.setInt("useTexture", 0);   // 텍스처는 총만
     lit_.setInt("diffuseMap", 0);
 }
 
@@ -111,12 +109,10 @@ void Renderer::drawCube(const glm::mat4& model, const glm::vec3& color) {
 }
 
 void Renderer::drawGunFirstPerson(const glm::vec3& color) {
-    // 총은 카메라에 붙어 있으므로 view = 단위행렬. 조명도 눈 좌표계 기준 (원본과 같은 값)
-    // 깊이를 지우고 그려서 가까운 물체(벽 등)에 파묻히지 않게 한다
+    // 총: view = 단위행렬, 깊이를 지우고 그려 벽에 묻히지 않게
     glClear(GL_DEPTH_BUFFER_BIT);
     useLit(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f));
     lit_.setMat4("model", gun_.viewTransform());
-    // 텍스처가 있으면 원래 색 그대로, 없으면 지정한 단색
     applyGunMaterial(gun_.hasTexture() ? glm::vec3(1.0f) : color);
     gun_.mesh().draw();
 }
@@ -129,7 +125,7 @@ void Renderer::drawUnlit(const Mesh& mesh, const glm::mat4& mvp, const glm::vec4
 }
 
 void Renderer::drawBar3D(const glm::vec3& pos, float width, float height, float fill, const glm::vec3& color) {
-    // 카메라를 정면으로 보게 회전 (빌보드)
+    // 빌보드
     glm::mat4 billboard = glm::translate(glm::mat4(1.0f), pos);
     billboard[0] = glm::vec4(camRight_, 0.0f);
     billboard[1] = glm::vec4(camUp_, 0.0f);
@@ -144,9 +140,7 @@ void Renderer::drawBar3D(const glm::vec3& pos, float width, float height, float 
     glEnable(GL_DEPTH_TEST);
 }
 
-// ============================================================
-// 2D
-// ============================================================
+// ---- 2D ----
 
 void Renderer::begin2D() {
     glDisable(GL_DEPTH_TEST);
@@ -161,7 +155,7 @@ void Renderer::drawRect(float x, float y, float w, float h, const glm::vec4& col
 }
 
 void Renderer::drawCrosshair(bool circle, const glm::vec3& color) {
-    // 픽셀 단위로 그려서 창 비율이 달라도 찌그러지지 않는다
+    // 픽셀 단위
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(width_ / 2.0f, height_ / 2.0f, 0.0f));
     model = glm::scale(model, glm::vec3(circle ? 10.0f : 12.0f));
     glLineWidth(2.0f);
@@ -181,7 +175,7 @@ float Renderer::textWidth(const std::string& text, Font font) const {
 }
 
 void Renderer::drawText(float x, float y, const std::string& text, const glm::vec3& color, Font font) {
-    // 비트맵 글자는 고정 파이프라인 기능이라 셰이더를 꺼야 색·위치가 정확하다
+    // 비트맵 글자는 셰이더를 끄고 그린다
     glUseProgram(0);
     glColor3f(color.r, color.g, color.b);
     glWindowPos2f(x, y);

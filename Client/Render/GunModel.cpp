@@ -5,9 +5,9 @@
 #include <sstream>
 
 namespace {
-// 1인칭 총 배치 (눈 좌표계: 오른쪽 +X, 위 +Y, 정면 -Z)
-constexpr float kGunLength = 0.45f;                        // 총 전체 길이 (화면 오른쪽 아래 표적을 너무 가리지 않게)
-const glm::vec3 kGunPosition(0.34f, -0.33f, -0.9f);        // 총 가운데 위치 (오른쪽 아래)
+// 눈 좌표계: 오른쪽 +X, 위 +Y, 정면 -Z
+constexpr float kGunLength = 0.45f;
+const glm::vec3 kGunPosition(0.34f, -0.33f, -0.9f);
 
 std::string directoryOf(const std::string& path) {
     const size_t slash = path.find_last_of("/\\");
@@ -33,7 +33,7 @@ void GunModel::load(const std::string& objPath) {
 }
 
 void GunModel::buildFallback() {
-    // 눈 좌표계(카메라가 -Z를 봄)에 바로 만든다: 몸통 + 총열 + 손잡이
+    // 임시 모양: 몸통 + 총열 + 손잡이
     std::vector<float> v;
     std::vector<unsigned> idx;
     const float bodyC[3] = { 0.32f, -0.30f, -0.95f },  bodyS[3] = { 0.10f, 0.12f, 0.42f };
@@ -52,11 +52,11 @@ bool GunModel::loadObj(const std::string& path) {
 
     std::vector<glm::vec3> positions, normals;
     std::vector<glm::vec2> texcoords;
-    std::vector<float> out;   // 위치3 + 법선3 + UV2, 삼각형 목록
+    std::vector<float> out;   // 위치3 + 법선3 + UV2
     std::string mtlName;
 
     auto resolve = [](int idx, size_t count) -> int {
-        // OBJ 인덱스는 1부터, 음수는 뒤에서부터
+        // 1부터, 음수는 뒤에서부터
         if (idx > 0) return idx - 1;
         if (idx < 0) return (int)count + idx;
         return -1;
@@ -84,7 +84,7 @@ bool GunModel::loadObj(const std::string& path) {
             std::getline(iss, rest);
             mtlName = trim(rest);
         } else if (type == "f") {
-            // 다각형 면도 받는다 (부채꼴로 삼각형 분할). 형식: v, v/vt, v//vn, v/vt/vn
+            // 다각형은 부채꼴로 분할
             struct Corner { int p = -1, t = -1, n = -1; };
             std::vector<Corner> face;
             std::string token;
@@ -126,7 +126,7 @@ bool GunModel::loadObj(const std::string& path) {
     mesh_.create(out, 8, {}, GL_TRIANGLES);
     std::cout << "총 모델 로드: " << path << " (삼각형 " << out.size() / 24 << "개)\n";
 
-    // ---- 크기·방향 자동 맞춤 ----
+    // 크기·방향 맞춤
     glm::vec3 bmin(1e9f), bmax(-1e9f);
     for (const auto& p : positions) {
         bmin = glm::min(bmin, p);
@@ -137,7 +137,7 @@ bool GunModel::loadObj(const std::string& path) {
     const bool alongX = size.x >= size.z;   // 총열 축
     const float length = alongX ? size.x : size.z;
 
-    // 아래쪽 30%(손잡이)가 몰린 쪽 = 뒤
+    // 손잡이(아래 30%)가 몰린 쪽이 뒤
     double gripSum = 0.0;
     int gripCount = 0;
     for (const auto& p : positions) {
@@ -147,9 +147,9 @@ bool GunModel::loadObj(const std::string& path) {
         }
     }
     const float gripOffset = gripCount > 0 ? (float)(gripSum / gripCount) - (alongX ? center.x : center.z) : 0.0f;
-    const bool muzzlePositive = gripOffset < 0.0f;   // 손잡이가 - 쪽이면 총구는 + 쪽
+    const bool muzzlePositive = gripOffset < 0.0f;
 
-    // 총구 방향을 정면(-Z)으로: +X→-Z는 Y축 +90°, -X→-Z는 -90°, +Z→-Z는 180°, -Z는 그대로
+    // 총구를 -Z로
     const float angle = alongX ? (muzzlePositive ? 90.0f : -90.0f) : (muzzlePositive ? 180.0f : 0.0f);
     const float scale = length > 1e-6f ? kGunLength / length : 1.0f;
 
@@ -183,7 +183,7 @@ void GunModel::loadMaterialTexture(const std::string& objPath, const std::string
         }
     }
     if (texName.empty()) {
-        // MTL이 없으면 같은 이름의 PNG를 찾아본다 (Gun.obj → Gun.png)
+        // MTL이 없으면 같은 이름의 PNG
         const size_t dot = objPath.find_last_of('.');
         const std::string stem = objPath.substr(dir.size(), dot == std::string::npos ? std::string::npos : dot - dir.size());
         texName = stem + ".png";

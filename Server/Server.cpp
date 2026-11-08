@@ -78,9 +78,9 @@ void AcceptLoop() {
         clientsMutex.unlock();
 
         if (!client) {
-            // 임시: 거부 응답 (이태형 11/12, SendPacket으로 교체)
+            // 입장 거부 (이태형 11/12에서 보완)
             S2C_LoginResultPacket result{ MakeHeader<S2C_LoginResultPacket>(S2C_LOGIN_RESULT), -1 };
-            send(sock, reinterpret_cast<const char*>(&result), sizeof(result), 0);
+            SendPacket(sock, reinterpret_cast<const char*>(&result), sizeof(result));
 
             std::cout << "[접속 거부] " << ip << ":" << port << " 자리 없음\n";
             closesocket(sock);

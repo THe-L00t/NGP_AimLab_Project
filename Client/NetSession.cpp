@@ -6,7 +6,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 namespace {
-    SOCKET sockOf(uintptr_t s) { return static_cast<SOCKET>(s); }
+SOCKET AsSocket(uintptr_t s) { return static_cast<SOCKET>(s); }
 }
 
 NetSession::NetSession(std::string nickname)
@@ -18,11 +18,11 @@ NetSession::~NetSession() {
 }
 
 void NetSession::update(float) {
-    // 받은 패킷 처리는 11/11
+    // ProcessServerPacket (이태형 11/11)
 }
 
-// 윈속 초기화, 소켓 만들기, 접속
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
+    CloseNetwork();
     ip_ = ip;
     port_ = port;
 
@@ -34,48 +34,56 @@ bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     }
     wsaReady_ = true;
 
+    state_ = State::Connecting;
+    recvThread_ = std::thread(&NetSession::RecvThread, this);
+    return true;
+}
+
+void NetSession::RecvThread() {
     const SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET) {
         std::cout << "socket() 실패: " << WSAGetLastError() << "\n";
         state_ = State::Failed;
-        return false;
+        return;
     }
-    BOOL noDelay = TRUE;   // 작은 패킷(클릭·시선)을 모아 보내지 않게
+    BOOL noDelay = TRUE;
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&noDelay), sizeof(noDelay));
     sock_ = static_cast<uintptr_t>(s);
+    if (closing_) {   // CloseNetwork가 먼저 불렸으면 직접 닫는다
+        const SOCKET mine = AsSocket(sock_.exchange(static_cast<uintptr_t>(INVALID_SOCKET)));
+        if (mine != INVALID_SOCKET) closesocket(mine);
+        return;
+    }
 
-    return Connect();   // 11/10에 RecvThread 안으로 옮긴다
-}
-
-// 서버에 접속 (블로킹: 될 때까지 기다린다)
-bool NetSession::Connect() {
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port_);
     if (inet_pton(AF_INET, ip_.c_str(), &addr.sin_addr) != 1) {
         std::cout << "잘못된 서버 주소: " << ip_ << "\n";
         state_ = State::Failed;
-        return false;
+        return;
     }
-    if (connect(sockOf(sock_), reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR) {
+    if (connect(s, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR) {
         std::cout << "서버 접속 실패: " << ip_ << ":" << port_ << " (오류 " << WSAGetLastError() << ")\n";
         state_ = State::Failed;
-        return false;
+        return;
     }
     state_ = State::Connected;
-    std::cout << "서버 접속: " << ip_ << ":" << port_ << "\n";
-    return true;
+    std::cout << "서버 접속: " << ip_ << ":" << port_ << " (" << nickname_ << ")\n";
+
+    // 수신 반복: RecvPacket → PushPacket (이태형 11/11)
 }
 
-// 소켓 닫기, 윈속 종료
 void NetSession::CloseNetwork() {
-    if (sockOf(sock_) != INVALID_SOCKET) {
-        closesocket(sockOf(sock_));
-    }
-    sock_ = static_cast<uintptr_t>(INVALID_SOCKET);
+    closing_ = true;
+    const SOCKET s = AsSocket(sock_.exchange(static_cast<uintptr_t>(INVALID_SOCKET)));
+    if (s != INVALID_SOCKET) closesocket(s);   // 막힌 connect·recv를 깨운다
+
+    if (recvThread_.joinable()) recvThread_.join();
 
     if (wsaReady_) {
         WSACleanup();
         wsaReady_ = false;
     }
+    closing_ = false;
 }

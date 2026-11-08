@@ -1,4 +1,4 @@
-﻿#include "Scene/SceneCommon.h"
+#include "Scene/SceneCommon.h"
 #include "Game/AimMath.h"
 #include "Core/App.h"
 #include "Core/Palette.h"
@@ -25,7 +25,6 @@ void updateLook(App& app) {
     Camera& cam = app.camera();
     if (d.x != 0.0f || d.y != 0.0f) cam.addLook(d.x, d.y);
     cam.setPosition(aim::eyePosition());
-    // 같은 시선으로 판정한다 (사격·Tracking·보호막)
     app.world().setAim(cam.yaw(), cam.pitch());
 }
 
@@ -40,7 +39,7 @@ void handleCommonKeys(App& app, bool allowSettings) {
         st.infoTimer = 3.0f;
         std::cout << "조준점: " << st.colorName() << " / " << st.shapeName() << "\n";
     }
-    if (!allowSettings) return;   // 원본과 같게: 게임 중에는 조준점 설정 변경 불가
+    if (!allowSettings) return;   // 게임 중에는 변경 불가
     if (in.keyPressed('2')) {
         st.cycleColor();
         st.infoTimer = 3.0f;
@@ -60,7 +59,7 @@ void drawWorld(App& app, float bossFlash) {
     r.beginFrame(app.camera());
     r.drawRoom();
 
-    // 표적 (따라가는 중이면 빨강)
+    // 표적
     for (const TargetState& t : s.targets) {
         r.drawSphere(t.pos, t.radius, t.progress > 0.0f ? palette::kTracked : palette::kTarget);
     }
@@ -68,7 +67,7 @@ void drawWorld(App& app, float bossFlash) {
     // 보스
     const BossState& boss = s.boss;
     if (boss.alive) {
-        const glm::vec3 base = boss.shield ? palette::kShield : palette::kBoss;   // 보호막 중이면 하늘색
+        const glm::vec3 base = boss.shield ? palette::kShield : palette::kBoss;
         const glm::vec3 color = glm::mix(base, palette::kWhite, std::clamp(bossFlash, 0.0f, 1.0f));
         r.drawSphere(boss.pos, boss.radius, color);
     }
@@ -83,7 +82,7 @@ void drawWorld(App& app, float bossFlash) {
         r.drawCube(m, p.color);
     }
 
-    // 따라가는 표적 위의 타이머 바 (원본과 같게 남은 시간만큼, 초록 → 빨강)
+    // 따라가는 표적 위 타이머 바
     for (const TargetState& t : s.targets) {
         if (t.progress <= 0.0f) continue;
         const float done = std::min(1.0f, t.progress / cfg::kTrackHoldTime);

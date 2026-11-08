@@ -87,8 +87,12 @@
     <ClCompile Include="Session.cpp">
       <Filter>Session</Filter>
     </ClCompile>
-    <ClCompile Include="LocalSession.cpp" />
-    <ClCompile Include="NetSession.cpp" />
+    <ClCompile Include="LocalSession.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="NetSession.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Game\AimMath.h">
@@ -104,6 +108,9 @@
       <Filter>Common\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Net\Protocol.h">
+      <Filter>Common\Net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Net\SendPacket.h">
       <Filter>Common\Net</Filter>
     </ClInclude>
     <ClInclude Include="Core\App.h">
@@ -163,9 +170,15 @@
     <ClInclude Include="Session.h">
       <Filter>Session</Filter>
     </ClInclude>
-    <ClInclude Include="Snapshot.h" />
-    <ClInclude Include="LocalSession.h" />
-    <ClInclude Include="NetSession.h" />
+    <ClInclude Include="Snapshot.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalSession.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="NetSession.h">
+      <Filter>Session</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\lit.frag">

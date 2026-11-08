@@ -1,8 +1,7 @@
 #include "Render/Texture.h"
 #include <iostream>
 
-// stb_image: 헤더 하나짜리 이미지 디코더 (External/include/stb, 퍼블릭 도메인/MIT).
-// 구현은 이 파일 한 곳에서만 만든다.
+// stb_image 구현은 이 파일에서만
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #define STBI_ONLY_JPEG
@@ -13,7 +12,7 @@
 
 bool Texture::loadFromFile(const std::string& path) {
     destroy();
-    // 이미지 파일은 위쪽 줄부터, OpenGL 텍스처는 아래쪽 줄부터 → 뒤집어서 읽는다 (OBJ의 UV와 맞추기)
+    // OpenGL은 아래 줄부터
     stbi_set_flip_vertically_on_load(1);
     int width = 0, height = 0, channels = 0;
     unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);

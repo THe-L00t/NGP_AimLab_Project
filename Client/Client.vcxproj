@@ -130,6 +130,7 @@
     <ClInclude Include="..\Common\Game\GameTypes.h" />
     <ClInclude Include="..\Common\Game\World.h" />
     <ClInclude Include="..\Common\Net\Protocol.h" />
+    <ClInclude Include="..\Common\Net\SendPacket.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="LocalSession.h" />
     <ClInclude Include="NetSession.h" />

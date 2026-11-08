@@ -39,18 +39,13 @@ bool World::leavePlayer(int slot) {
     return true;
 }
 
-// ============================================================
-// 표적이 생기는 영역: 모두 맵 중앙.
-// (플레이어는 중앙에서 kEyeDistance = 14m 떨어져 있으므로 가장 가까운 모서리도 6m 넘게 떨어진다)
-// ============================================================
+// ---- 표적 구역 (맵 중앙) ----
 
 World::Bounds World::gridBounds() {
-    // 중앙의 8 × 8 × 8 상자 (가운데 높이 5)
     return { { -4.0f, 1.0f, -4.0f }, { 4.0f, 9.0f, 4.0f } };
 }
 
 World::Bounds World::trackingBounds() {
-    // 중앙의 12 × 11 × 12 상자 (움직이는 표적이 튕기며 돌아다님)
     return { { -6.0f, 0.0f, -6.0f }, { 6.0f, 11.0f, 6.0f } };
 }
 
@@ -65,9 +60,7 @@ glm::vec3 World::areaCenter(RoundType round) {
     return (b.min + b.max) * 0.5f;
 }
 
-// ============================================================
-// 입력
-// ============================================================
+// ---- 입력 ----
 
 void World::start() {
     if (phase_ == Phase::Title) startMatch();
@@ -96,7 +89,7 @@ void World::fire() {
         if (idx < 0) return;
         events_.push_back({ EventKind::TargetHit, targets_[idx].pos });
         credit();
-        // 같은 자리에 다시 생기지 않게 다른 곳으로 옮긴다
+        // 다른 자리로 옮긴다
         Target& t = targets_[idx];
         t.pos = randomFreePosition(gridBounds(), t.radius * 3.0f, idx);
         break;
@@ -109,7 +102,7 @@ void World::fire() {
         break;
     }
     case RoundType::Tracking:
-        break;  // Tracking은 클릭이 아니라 누르고 있기(setTrigger)로 판정
+        break;  // Tracking은 setTrigger로 판정
     }
 }
 
@@ -121,14 +114,12 @@ void World::setTrigger(int slot, bool held) {
     if (!isPlayerJoined(slot)) return;
     playerInputs_[slot].triggerHeld = held;
     if (slot == kLocalSlot && !held) {
-        // 원본과 같게: 버튼을 떼면 진행도 초기화
+        // 떼면 진행도 초기화
         for (auto& t : targets_) t.progress = 0.0f;
     }
 }
 
-// ============================================================
-// 진행
-// ============================================================
+// ---- 진행 ----
 
 void World::enterPhase(Phase phase, float duration) {
     phase_ = phase;
@@ -140,7 +131,7 @@ void World::tick(float dt) {
 
     switch (phase_) {
     case Phase::Title:
-        break;   // R을 누를 때까지 기다린다 (start)
+        break;   // start() 대기
 
     case Phase::RoundIntro:
         if (phaseTime_ <= 0.0f) {
@@ -159,7 +150,7 @@ void World::tick(float dt) {
 
     case Phase::RoundSummary:
         if (phaseTime_ <= 0.0f) {
-            // 통과 못 한 라운드가 있으면 다음 라운드 없이 게임을 끝낸다
+            // 실패하면 바로 끝낸다
             if (failedRound_ >= 0) enterPhase(Phase::FinalResult, cfg::kFinalResultTime);
             else startRound(roundIndex_ + 1);
         }
@@ -189,7 +180,6 @@ void World::startRound(int index) {
     case RoundType::Boss:     spawnBoss(); break;
     }
 
-    // 통과 점수 (Boss는 처치가 조건이라 0)
     roundGoal_ = round() == RoundType::GridShot ? cfg::kGridGoal
                : round() == RoundType::Tracking ? cfg::kTrackingGoal
                : 0;
@@ -198,10 +188,9 @@ void World::startRound(int index) {
 }
 
 void World::endRound() {
-    lastRoundCleared_ = goalReached();   // 엔티티를 지우기 전에 판정 (보스 생존 여부)
+    lastRoundCleared_ = goalReached();   // 엔티티를 지우기 전에 판정
     if (!lastRoundCleared_) failedRound_ = roundIndex_;
     clearEntities();
-    // 1·2라운드는 통과든 실패든 결과를 5초 보여 준다. 실패면 그 뒤 바로 최종 결과로 간다 (RoundSummary 참고)
     if (roundIndex_ < cfg::kRoundCount - 1) enterPhase(Phase::RoundSummary, cfg::kRoundSummaryTime);
     else enterPhase(Phase::FinalResult, cfg::kFinalResultTime);
 }
@@ -238,9 +227,7 @@ void World::clearEntities() {
     trackKilled_ = 0;
 }
 
-// ============================================================
-// 1라운드 GridShot
-// ============================================================
+// ---- 1라운드 GridShot ----
 
 void World::spawnGridShot() {
     for (int i = 0; i < cfg::kGridTargets; ++i) {
@@ -251,9 +238,7 @@ void World::spawnGridShot() {
     }
 }
 
-// ============================================================
-// 2라운드 Tracking
-// ============================================================
+// ---- 2라운드 Tracking ----
 
 World::Target World::makeTrackingTarget() {
     Bounds b = trackingBounds();
@@ -280,7 +265,7 @@ void World::spawnTracking() {
 void World::updateTracking(float dt) {
     const Bounds bounds = trackingBounds();
 
-    // 1) 이동 + 가끔 방향 전환 + 벽에 튕기기
+    // 이동·방향 전환·튕기기
     for (auto& t : targets_) {
         t.pos += t.vel * dt;
         if (randf(0.0f, 1.0f) < cfg::kTrackTurnRate * dt) {
@@ -292,16 +277,14 @@ void World::updateTracking(float dt) {
         bounceInside(t.pos, t.vel, t.radius, bounds);
     }
 
-    // 2) 지금 조준 중인 표적 (버튼을 누르고 있을 때만)
+    // 누르고 있을 때 조준 중인 표적
     const int aimed = playerInputs_[kLocalSlot].triggerHeld ? pickTarget(aim::eyePosition(), aimDirection()) : -1;
 
-    // 3) 계속 조준하면 진행도 증가, 벗어나면 초기화
     for (size_t i = 0; i < targets_.size(); ++i) {
         if (aimed == (int)i) targets_[i].progress += dt;
         else targets_[i].progress = 0.0f;
     }
 
-    // 4) 2초를 채우면 처치
     for (size_t i = 0; i < targets_.size();) {
         if (targets_[i].progress < cfg::kTrackHoldTime) {
             ++i;
@@ -314,9 +297,7 @@ void World::updateTracking(float dt) {
     }
 }
 
-// ============================================================
-// 3라운드 Boss
-// ============================================================
+// ---- 3라운드 Boss ----
 
 void World::spawnBoss() {
     boss_ = Boss{};
@@ -351,13 +332,13 @@ void World::updateBoss(float dt) {
     bounceInside(boss_.pos, boss_.vel, boss_.radius, bossBounds());
 
     if (boss_.shield) {
-        // 트래킹 페이즈: 좌클릭을 누른 채 보스를 조준하고 있으면 게이지가 찬다
+        // 누른 채 조준하면 게이지가 찬다
         float t = 0.0f;
         shieldTracked_ = playerInputs_[kLocalSlot].triggerHeld && aim::raySphere(aim::eyePosition(), aimDirection(), boss_.pos, boss_.radius, t);
         if (shieldTracked_) boss_.shieldHold += dt;
         else boss_.shieldHold = std::max(0.0f, boss_.shieldHold - cfg::kBossShieldDecay * dt);
         if (boss_.shieldHold >= cfg::kBossShieldHold) breakShield();
-        return;   // 보호막 중에는 순간이동하지 않는다 (따라갈 수 있게)
+        return;   // 보호막 중에는 순간이동 없음
     }
 
     boss_.teleportTimer -= dt;
@@ -367,7 +348,6 @@ void World::updateBoss(float dt) {
 void World::raiseShield() {
     boss_.shield = true;
     boss_.shieldHold = 0.0f;
-    // 순간이동 대신 빠르게 움직이며 도망간다
     const float angle = randf(0.0f, 2.0f * kPi);
     boss_.vel = glm::vec3(std::cos(angle), randf(-0.3f, 0.3f), std::sin(angle)) * cfg::kBossShieldSpeed;
     events_.push_back({ EventKind::BossShieldUp, boss_.pos });
@@ -379,7 +359,7 @@ void World::breakShield() {
     ++boss_.shieldsDone;
     shieldTracked_ = false;
     events_.push_back({ EventKind::BossShieldBroken, boss_.pos });
-    teleportBoss();   // 다음 페이즈 시작: 바로 순간이동하고 다시 총으로 깎는다
+    teleportBoss();
 }
 
 void World::teleportBoss() {
@@ -402,7 +382,7 @@ void World::teleportBoss() {
 }
 
 void World::hitBoss(const glm::vec3& point) {
-    if (boss_.shield) return;   // 보호막 중에는 총알이 막힌다 (따라가서 깨야 한다)
+    if (boss_.shield) return;   // 보호막이 막는다
 
     const int stageBefore = bossStage(boss_.hp);
     --boss_.hp;
@@ -415,18 +395,16 @@ void World::hitBoss(const glm::vec3& point) {
         events_.push_back({ EventKind::BossKilled, boss_.pos });
         return;
     }
-    // HP가 2/3, 1/3 지점에 닿으면 보호막 (트래킹 페이즈)
+    // HP 2/3·1/3에서 보호막
     if (boss_.shieldsDone < cfg::kBossShieldCount && boss_.hp <= cfg::bossShieldHp(boss_.maxHp, boss_.shieldsDone)) {
         raiseShield();
         return;
     }
-    // HP 25% 구간을 넘을 때마다 즉시 순간이동하고, 이후 순간이동이 더 잦아진다
+    // HP 25% 구간마다 즉시 순간이동
     if (bossStage(boss_.hp) != stageBefore) teleportBoss();
 }
 
-// ============================================================
-// 보조
-// ============================================================
+// ---- 보조 ----
 
 glm::vec3 World::aimDirection() const {
     const PlayerInput& input = playerInputs_[kLocalSlot];
@@ -470,7 +448,7 @@ glm::vec3 World::randomFreePosition(const Bounds& b, float minDistance, int igno
         }
         if (ok) return p;
     }
-    return (b.min + b.max) * 0.5f;  // 자리를 못 찾으면 영역 가운데
+    return (b.min + b.max) * 0.5f;  // 못 찾으면 가운데
 }
 
 void World::bounceInside(glm::vec3& pos, glm::vec3& vel, float radius, const Bounds& b) {
@@ -485,9 +463,7 @@ void World::bounceInside(glm::vec3& pos, glm::vec3& vel, float radius, const Bou
     }
 }
 
-// ============================================================
-// 상태 조회
-// ============================================================
+// ---- 상태 조회 ----
 
 const World::PlayerInput* World::playerInput(int slot) const {
     return isPlayerJoined(slot) ? &playerInputs_[slot] : nullptr;

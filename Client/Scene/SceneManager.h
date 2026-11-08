@@ -1,6 +1,5 @@
 #pragma once
-// 현재 씬 보관 + 전환. 전환 요청은 다음 프레임 시작에 적용한다
-// (씬의 update 도중에 자기 자신이 지워지지 않게).
+// 씬 전환은 다음 프레임 시작에 적용한다
 #include "Scene/Scene.h"
 #include <memory>
 

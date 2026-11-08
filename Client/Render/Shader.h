@@ -17,7 +17,7 @@ public:
     void setMat4(const char* name, const glm::mat4& m) const;
     void setVec3(const char* name, const glm::vec3& v) const;
     void setVec4(const char* name, const glm::vec4& v) const;
-    void setInt(const char* name, int v) const;   // 정수·bool·텍스처 유닛 번호
+    void setInt(const char* name, int v) const;
 
 private:
     static std::string readFile(const std::string& path);

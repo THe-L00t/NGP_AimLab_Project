@@ -1,5 +1,5 @@
 #pragma once
-// 1인칭 카메라. yaw/pitch(도)로 시선을 표현한다 — 같은 값을 명중 판정의 조준 방향으로 쓴다.
+// 1인칭 카메라 (yaw/pitch는 판정과 같은 값)
 #include <glm/glm.hpp>
 
 class Camera {
@@ -8,7 +8,7 @@ public:
 
     void setPosition(const glm::vec3& p) { position_ = p; }
     void setAngles(float yawDeg, float pitchDeg);
-    void addLook(float dxPixels, float dyPixels);   // 마우스 이동량(픽셀). dy는 위쪽이 +
+    void addLook(float dxPixels, float dyPixels);   // dy는 위쪽 +
 
     float yaw() const { return yaw_; }
     float pitch() const { return pitch_; }
@@ -18,7 +18,7 @@ public:
     const glm::vec3& up() const { return up_; }
     glm::mat4 view() const;
 
-    float sensitivity = 0.03f;   // 원본 값 (도/픽셀)
+    float sensitivity = 0.03f;   // 도/픽셀
 
 private:
     void update();

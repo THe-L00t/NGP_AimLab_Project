@@ -1,7 +1,5 @@
 ﻿#pragma once
-// 화면이 그릴 게임 상태 — 임시.
-// 지금 1인 화면이 World에서 읽던 항목만 옮겨 담았다 (3인용·패킷용 항목 없음).
-// 11/5 회의에서 Protocol.h의 Snapshot이 확정되면 그것으로 바꾼다.
+// 화면이 그릴 게임 상태 (S2C_SNAPSHOT 반영은 이태형 11/16)
 #include "Game/GameConfig.h"
 #include "Game/GameTypes.h"
 #include <glm/glm.hpp>
@@ -10,7 +8,7 @@
 struct TargetState {
     glm::vec3 pos{ 0.0f };
     float radius = 0.0f;
-    float progress = 0.0f;   // Tracking: 연속 조준 시간(초)
+    float progress = 0.0f;   // Tracking 조준 시간(초)
 };
 
 struct BossState {
@@ -19,25 +17,25 @@ struct BossState {
     float radius = 0.0f;
     int hp = 0;
     int maxHp = 0;
-    bool shield = false;     // 보호막 중
+    bool shield = false;
 };
 
 struct Snapshot {
     Phase phase = Phase::Title;
-    float phaseTimeLeft = 0.0f;          // 현재 단계의 남은 시간(초)
-    int roundIndex = 0;                  // 0~2
+    float phaseTimeLeft = 0.0f;
+    int roundIndex = 0;
     std::vector<TargetState> targets;
     BossState boss;
 
-    int score = 0;                       // 전체 점수
+    int score = 0;
     int roundScore[cfg::kRoundCount] = {};
-    int roundGoal = 0;                   // 통과 점수 (Boss는 0)
+    int roundGoal = 0;          // Boss는 0
     bool roundCleared = false;
-    int failedRound = -1;                // 통과 못 한 라운드 (-1 = 없음)
-    int trackingRemaining = 0;           // Tracking 남은 표적 수
-    float shieldProgress = 0.0f;         // 보호막 게이지 0~1
-    int shieldsLeft = 0;                 // 남은 보호막 수
-    bool shieldTracked = false;          // 보호막 걸린 보스를 따라가고 있나
+    int failedRound = -1;       // -1 = 없음
+    int trackingRemaining = 0;
+    float shieldProgress = 0.0f;
+    int shieldsLeft = 0;
+    bool shieldTracked = false;
 
     RoundType round() const { return kRoundOrder[roundIndex]; }
 };

@@ -1,5 +1,5 @@
 #pragma once
-// 조준점 설정 (색·모양). 게임 로직과 무관하다.
+// 조준점 설정
 #include <glm/glm.hpp>
 
 enum class CrosshairColor { White, Black, Green };
@@ -8,7 +8,7 @@ enum class CrosshairShape { Cross, Circle };
 struct Settings {
     CrosshairColor color = CrosshairColor::White;
     CrosshairShape shape = CrosshairShape::Cross;
-    float infoTimer = 0.0f;    // > 0이면 화면에 설정 정보 표시 (M·2·3 키)
+    float infoTimer = 0.0f;    // > 0이면 설정 정보 표시
 
     void cycleColor() {
         color = color == CrosshairColor::White ? CrosshairColor::Black

@@ -1,4 +1,4 @@
-﻿#include "Scene/GameScene.h"
+#include "Scene/GameScene.h"
 #include "Game/AimMath.h"
 #include "Core/App.h"
 #include "Core/Palette.h"
@@ -20,7 +20,6 @@ const char* roundDescription(RoundType r) {
     return "";
 }
 
-// 라운드 통과 조건 한 줄
 std::string goalText(const Snapshot& s) {
     switch (s.round()) {
     case RoundType::GridShot: return scene::format("GOAL  %d hits in %.0f s", s.roundGoal, cfg::kGridDuration);
@@ -37,7 +36,7 @@ int countdownNumber(float timeLeft) {
 }
 
 void GameScene::onEnter(App& app) {
-    lastPhase_ = Phase::Title;   // 처음 프레임에 '라운드 시작'으로 인식시켜 시점을 표적 쪽으로 맞춘다
+    lastPhase_ = Phase::Title;   // 첫 프레임에 시점을 표적 쪽으로
     triggerHeld_ = false;
 }
 
@@ -53,7 +52,7 @@ void GameScene::update(App& app, float dt) {
         return;
     }
 
-    // 라운드가 새로 시작되면 표적이 나오는 구역 가운데를 보게 한다 (원본: 시작할 때 카메라 초기화)
+    // 라운드 시작 시 표적 구역을 보게 한다
     if (s.phase == Phase::RoundIntro && lastPhase_ != Phase::RoundIntro) {
         float yaw = 0.0f, pitch = 0.0f;
         aim::lookAngles(aim::eyePosition(), World::areaCenter(s.round()), yaw, pitch);
@@ -72,11 +71,11 @@ void GameScene::update(App& app, float dt) {
     const bool playing = s.phase == Phase::RoundPlaying;
     const RoundType round = s.round();
 
-    // GridShot·Boss: 클릭 한 번 = 한 발
+    // Shooting·Boss: 클릭 = 한 발
     if (playing && round != RoundType::Tracking && app.input().mousePressed(MouseButton::Left)) {
         app.world().fire();
     }
-    // Tracking과 보스 보호막: 누르고 있는 동안 계속 조준 판정 (보스는 보호막 중일 때만 의미가 있다)
+    // Tracking·보호막: 누르고 있는 동안 판정
     const bool wantTrigger = playing && (round == RoundType::Tracking || round == RoundType::Boss) &&
                              app.input().mouseDown(MouseButton::Left);
     if (wantTrigger != triggerHeld_) {
@@ -84,12 +83,11 @@ void GameScene::update(App& app, float dt) {
         triggerHeld_ = wantTrigger;
     }
 
-    // 보스가 맞으면 잠깐 하얗게 번쩍
     bossFlash_ = std::max(0.0f, bossFlash_ - dt * 6.0f);
     for (const GameEvent& e : app.frameEvents()) {
         if (e.kind == EventKind::BossHit) bossFlash_ = 1.0f;
     }
-    // 보호막을 제대로 따라가는 중이면 보스를 밝게 해서 알려 준다
+    // 보호막을 따라가는 중이면 밝게
     if (s.shieldTracked) bossFlash_ = std::max(bossFlash_, 0.45f);
 }
 
@@ -119,7 +117,7 @@ void GameScene::drawHud(App& app) {
     const int ri = s.roundIndex;
     const bool active = s.phase == Phase::RoundIntro || s.phase == Phase::RoundPlaying;
 
-    // ---- 가운데 위: 라운드 · 남은 시간 ----
+    // 라운드 · 남은 시간
     r.drawTextCentered(sw / 2.0f, sh - 35.0f,
                        scene::format("ROUND %d/%d   %s", ri + 1, cfg::kRoundCount, roundName(s.round())),
                        palette::kYellow);
@@ -127,7 +125,7 @@ void GameScene::drawHud(App& app) {
         r.drawTextCentered(sw / 2.0f, sh - 62.0f, scene::format("Time  %.1fs", s.phaseTimeLeft), palette::kWhite);
     }
 
-    // ---- 보스 HP 바 (+ 보호막 지점 표시, 보호막 게이지) ----
+    // 보스 HP 바 · 보호막 게이지
     if (s.round() == RoundType::Boss && active && boss.maxHp > 0) {
         const float bw = 420.0f, bh = 18.0f;
         const float bx = sw / 2.0f - bw / 2.0f, by = sh - 100.0f;
@@ -149,7 +147,7 @@ void GameScene::drawHud(App& app) {
         }
     }
 
-    // ---- 왼쪽 위: 점수 · 목표 ----
+    // 점수 · 목표
     scene::drawPanel(app, 20.0f, sh - 92.0f, 250.0f, 72.0f);
     r.drawText(35.0f, sh - 50.0f, scene::format("SCORE  %d", s.score), palette::kYellow);
     if (s.round() != RoundType::Boss && s.roundGoal > 0) {
@@ -173,7 +171,6 @@ void GameScene::drawIntro(App& app) {
                        palette::kYellow, Font::Large);
     r.drawTextCentered(cx, cy + 55.0f, roundDescription(s.round()), palette::kWhite);
     r.drawTextCentered(cx, cy + 26.0f, goalText(s), palette::kGreen);
-    // 숫자는 화면 가운데 조준점과 겹치지 않게 아래에
     r.drawTextCentered(cx, cy - 55.0f, scene::format("%d", countdownNumber(s.phaseTimeLeft)), palette::kWhite, Font::Large);
 }
 

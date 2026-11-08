@@ -57,7 +57,6 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <!-- 서버는 그래픽 없이 Common(World·Protocol)과 GLM(수학)만 쓴다 -->
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);$(RepoDir)Common;$(ExternalDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -96,6 +95,7 @@
     <ClInclude Include="..\Common\Game\GameTypes.h" />
     <ClInclude Include="..\Common\Game\World.h" />
     <ClInclude Include="..\Common\Net\Protocol.h" />
+    <ClInclude Include="..\Common\Net\SendPacket.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,5 +1,5 @@
 #pragma once
-// 그리기 전담. 게임 상태를 «읽어서» 그리기만 하고, 게임 규칙은 전혀 모른다.
+// 그리기 전담 (게임 규칙은 모른다)
 #include "Render/Camera.h"
 #include "Render/GunModel.h"
 #include "Render/Mesh.h"
@@ -17,16 +17,16 @@ public:
     int width() const { return width_; }
     int height() const { return height_; }
 
-    // ---- 3D ----
-    void beginFrame(const Camera& cam);     // 화면 지우기 + 카메라·조명 설정
+    // 3D
+    void beginFrame(const Camera& cam);
     void drawRoom();
     void drawSphere(const glm::vec3& center, float radius, const glm::vec3& color);
     void drawCube(const glm::mat4& model, const glm::vec3& color);
     void drawGunFirstPerson(const glm::vec3& color);
-    // 카메라를 향하는 진행 바 (Tracking 타이머 바). fill = 0~1
+    // 카메라를 향하는 진행 바, fill 0~1
     void drawBar3D(const glm::vec3& pos, float width, float height, float fill, const glm::vec3& color);
 
-    // ---- 2D (픽셀 좌표, 왼쪽 아래가 원점) ----
+    // 2D (픽셀, 왼쪽 아래 원점)
     void begin2D();
     void drawRect(float x, float y, float w, float h, const glm::vec4& color);
     void drawCrosshair(bool circle, const glm::vec3& color);
@@ -36,7 +36,7 @@ public:
 
 private:
     void useLit(const glm::mat4& view, const glm::vec3& lightPos, const glm::vec3& viewPos);
-    void applyGunMaterial(const glm::vec3& tint);   // 총 텍스처(있으면) + 틴트 색
+    void applyGunMaterial(const glm::vec3& tint);
     void drawUnlit(const Mesh& mesh, const glm::mat4& mvp, const glm::vec4& color);
     static void* glutFont(Font font);
 
