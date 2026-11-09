@@ -10,3 +10,10 @@ void PushInput(const Input& input) {
     g_inputs.push_back(input);
     inputMutex.unlock();
 }
+
+void PopInputs(std::vector<Input>& out) {
+    out.clear();
+    inputMutex.lock();
+    out.swap(g_inputs);   // 잠금 안에서는 바꿔치기만
+    inputMutex.unlock();
+}

@@ -32,7 +32,8 @@ struct Input {
     Packet packet{};
 };
 
-void PushInput(const Input& input);   // inputMutex
+void PushInput(const Input& input);       // inputMutex
+void PopInputs(std::vector<Input>& out);  // inputMutex, 통째로 꺼낸다
 
 void ClientThread(Client* client);   // 이태형
 void GameLoop();                     // 안병규
