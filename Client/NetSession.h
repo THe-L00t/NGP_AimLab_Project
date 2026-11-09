@@ -25,6 +25,7 @@ public:
 
 private:
     void RecvThread();
+    bool SendLogin();
 
     std::string nickname_;
     std::string ip_;
