@@ -27,6 +27,9 @@
     <ClCompile Include="..\Common\Game\World.cpp">
       <Filter>Common\Game</Filter>
     </ClCompile>
+    <ClCompile Include="ClientThread.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Game\AimMath.h">
