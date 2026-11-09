@@ -15,6 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="InputQueue.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="main.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="Server.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="Stub.cpp"><Filter>Server</Filter></ClCompile>

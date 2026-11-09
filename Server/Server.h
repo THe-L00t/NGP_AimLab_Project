@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 struct Client {
     SOCKET      sock = INVALID_SOCKET;
@@ -30,6 +31,8 @@ struct Input {
     int    slot = -1;
     Packet packet{};
 };
+
+void PushInput(const Input& input);   // inputMutex
 
 void ClientThread(Client* client);   // 이태형
 void GameLoop();                     // 안병규
