@@ -22,5 +22,14 @@ extern std::mutex clientsMutex;
 bool InitServer(uint16_t port);
 void AcceptLoop();
 
+// 서버 내부 끊김 알림 (PacketType에 0은 없다)
+constexpr uint8_t PKT_DISCONNECT = 0;
+
+// 입력 큐 항목: 보낸 자리 + 패킷
+struct Input {
+    int    slot = -1;
+    Packet packet{};
+};
+
 void ClientThread(Client* client);   // 이태형
 void GameLoop();                     // 안병규
