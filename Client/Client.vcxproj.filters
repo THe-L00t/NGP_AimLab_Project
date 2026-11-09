@@ -179,6 +179,9 @@
     <ClInclude Include="NetSession.h">
       <Filter>Session</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Net\RecvPacket.h">
+      <Filter>Common\Net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\lit.frag">

@@ -95,6 +95,7 @@
     <ClInclude Include="..\Common\Game\GameTypes.h" />
     <ClInclude Include="..\Common\Game\World.h" />
     <ClInclude Include="..\Common\Net\Protocol.h" />
+    <ClInclude Include="..\Common\Net\RecvPacket.h" />
     <ClInclude Include="..\Common\Net\SendPacket.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>

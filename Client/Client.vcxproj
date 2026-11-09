@@ -121,6 +121,7 @@
     <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Net\RecvPacket.h" />
     <ClInclude Include="Core\App.h" />
     <ClInclude Include="Core\Palette.h" />
     <ClInclude Include="Core\Settings.h" />
