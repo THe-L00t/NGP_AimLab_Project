@@ -107,6 +107,7 @@
     <ClCompile Include="LocalSession.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetSession.cpp" />
+    <ClCompile Include="PacketQueue.cpp" />
     <ClCompile Include="Render\Camera.cpp" />
     <ClCompile Include="Render\GunModel.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
