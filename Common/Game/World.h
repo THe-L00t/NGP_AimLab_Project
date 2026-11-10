@@ -40,6 +40,8 @@ public:
     int joinPlayer();             // 첫 빈 자리, 없으면 -1
     bool joinPlayer(int slot);
     bool leavePlayer(int slot);
+    bool setReady(int slot, bool ready);
+    bool isReady(int slot) const { return isPlayerJoined(slot) && playerReady_[slot]; }
 
     // 입력
     void start();
@@ -87,6 +89,7 @@ private:
     void resetToTitle();
     bool roundFinished() const;
     bool goalReached() const;
+    bool allPlayersReady() const;
 
     // 라운드별
     void spawnGridShot();
@@ -125,6 +128,7 @@ private:
     bool isPlayerJoined(int slot) const { return validSlot(slot) && playerJoined_[slot]; }
     PlayerInput playerInputs_[kMaxPlayers]{};
     bool playerJoined_[kMaxPlayers]{};
+    bool playerReady_[kMaxPlayers]{};
 
     std::vector<Target> targets_;
     Boss boss_;
