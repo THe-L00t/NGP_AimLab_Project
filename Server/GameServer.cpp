@@ -42,6 +42,33 @@ void ProcessPacket(int slot, const Packet& packet) {
         }
         break;
 
+    case C2S_AIM:
+        if (const auto* p = As<C2S_AimPacket>(packet)) {
+            // 시선 반영 (안병규 11/17)
+            (void)p;
+        } else {
+            LogSizeError(slot, packet);
+        }
+        break;
+
+    case C2S_FIRE:
+        if (const auto* p = As<C2S_FirePacket>(packet)) {
+            // 발사 판정·먼저 맞힌 점수 (안병규 11/19)
+            (void)p;
+        } else {
+            LogSizeError(slot, packet);
+        }
+        break;
+
+    case C2S_TRIGGER:
+        if (const auto* p = As<C2S_TriggerPacket>(packet)) {
+            // 누르기 반영: Tracking·보호막 (안병규 11/23)
+            (void)p;
+        } else {
+            LogSizeError(slot, packet);
+        }
+        break;
+
     default:
         std::cout << "[알 수 없는 패킷] 자리 " << slot << " 종류 " << static_cast<int>(packet.header.type) << "\n";
         break;
