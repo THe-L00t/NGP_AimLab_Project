@@ -35,6 +35,7 @@ private:
     // ---- 이태형 ----
     void RecvThread();
     void PushPacket(const Packet& packet);       // 패킷 큐에 넣기 (RecvThread)
+    void PopPackets(std::vector<Packet>& out);   // 패킷 큐를 통째로 꺼내기 (Main)
 
     std::string ip_;
     uint16_t port_ = 0;
