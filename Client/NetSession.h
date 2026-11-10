@@ -18,23 +18,29 @@ public:
     const Snapshot& snapshot() const override { return snapshot_; }
     void update(float dt) override;
 
+    // ---- 이태형 (NetSession.cpp · PacketQueue.cpp) ----
     bool StartNetwork(const char* ip, uint16_t port);   // 재시도에도 사용
     void CloseNetwork();
 
     State state() const { return state_; }
 
+    // ---- 안병규 (NetSend.cpp) ----
+
 private:
+    std::string nickname_;
+    Snapshot snapshot_;
+
+    // ---- 이태형 ----
     void RecvThread();
 
-    std::string nickname_;
     std::string ip_;
     uint16_t port_ = 0;
     bool wsaReady_ = false;
 
-    std::atomic<uintptr_t> sock_{ ~uintptr_t(0) };   // SOCKET, ~0 = INVALID_SOCKET
+    std::atomic<uintptr_t> sock_{ ~uintptr_tALID_SOCKET
     std::atomic<bool> closing_{ false };
     std::atomic<State> state_{ State::Connecting };
     std::thread recvThread_;
 
-    Snapshot snapshot_;
-};
+    // ---- 안병규 ----
+    };
