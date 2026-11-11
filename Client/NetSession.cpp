@@ -19,7 +19,9 @@ NetSession::~NetSession() {
 }
 
 void NetSession::update(float) {
-    // ProcessServerPacket (이태형 11/11)
+    std::vector<Packet> packets;
+    PopPackets(packets);   // RecvThread가 넣어 둔 패킷을 통째로 꺼낸다
+    for (const Packet& packet : packets) ProcessServerPacket(packet);
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
@@ -91,4 +93,19 @@ void NetSession::CloseNetwork() {
         wsaReady_ = false;
     }
     closing_ = false;
+}
+
+// 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
+void NetSession::ProcessServerPacket(const Packet& packet) {
+    switch (packet.header.type) {
+    case S2C_LOGIN_RESULT:   // 입장 결과 반영 (이태형 11/11)
+        break;
+    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
+        break;
+    case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
+        break;
+    default:
+        std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
+        break;
+    }
 }
