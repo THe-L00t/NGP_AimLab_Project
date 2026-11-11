@@ -1,9 +1,12 @@
 #include "GameServer.h"
+#include <cstring>
 #include <iostream>
 
 World g_world;
 
 namespace {
+
+char g_nicknames[MAX_PLAYERS][NAME_SIZE] = {};   // 자리별 닉네임 (로그인 때 정함)
 
 // 크기가 T와 같으면 T로 본다, 다르면 nullptr
 template <typename T>
@@ -15,6 +18,23 @@ const T* As(const Packet& packet) {
 void LogSizeError(int slot, const Packet& packet) {
     std::cout << "[크기 오류] 자리 " << slot << " 종류 " << static_cast<int>(packet.header.type)
               << " 크기 " << packet.header.size << "\n";
+}
+
+// 로그인: 닉네임 정리 후 자리 배정
+void HandleLogin(int slot, const C2S_LoginPacket& p) {
+    char name[NAME_SIZE] = {};
+    std::memcpy(name, p.nickname, NAME_SIZE - 1);   // 끝 널 보장
+    if (name[0] == '\0') {   // 비면 PlayerN
+        std::memcpy(name, "Player", 6);
+        name[6] = static_cast<char>('1' + slot);
+    }
+
+    if (!g_world.joinPlayer(slot)) {
+        std::cout << "[로그인 실패] 자리 " << slot << "\n";
+        return;
+    }
+    std::memcpy(g_nicknames[slot], name, NAME_SIZE);
+    std::cout << "[로그인] 자리 " << slot << " " << name << "\n";
 }
 
 } // namespace
@@ -40,8 +60,7 @@ void ProcessPacket(int slot, const Packet& packet) {
 
     case C2S_LOGIN:
         if (const auto* p = As<C2S_LoginPacket>(packet)) {
-            // 자리 배정·입장 결과 전송 (한현우 11/11)
-            (void)p;
+            HandleLogin(slot, *p);
         } else {
             LogSizeError(slot, packet);
         }
