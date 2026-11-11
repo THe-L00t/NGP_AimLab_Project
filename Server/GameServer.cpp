@@ -1,6 +1,8 @@
 #include "GameServer.h"
 #include <iostream>
 
+World g_world;
+
 namespace {
 
 // 크기가 T와 같으면 T로 본다, 다르면 nullptr
@@ -16,6 +18,18 @@ void LogSizeError(int slot, const Packet& packet) {
 }
 
 } // namespace
+
+// 한 자리에 보낸다. 잠금 안에서는 소켓만 꺼내고 보내기는 밖에서 한다
+bool SendTo(int slot, const char* data, int size) {
+    if (slot < 0 || slot >= MAX_PLAYERS) return false;
+
+    SOCKET sock = INVALID_SOCKET;
+    clientsMutex.lock();
+    if (g_clients[slot]) sock = g_clients[slot]->sock;
+    clientsMutex.unlock();
+
+    return SendPacket(sock, data, size);
+}
 
 // 입력 큐에서 꺼낸 순서대로 불린다
 void ProcessPacket(int slot, const Packet& packet) {
