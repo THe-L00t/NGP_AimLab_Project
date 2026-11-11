@@ -20,6 +20,7 @@ struct Client {
 extern std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
 extern std::mutex clientsMutex;
 
+// ---- 한현우 ----
 bool InitServer(uint16_t port);
 void AcceptLoop();
 
@@ -35,5 +36,8 @@ struct Input {
 void PushInput(const Input& input);       // inputMutex
 void PopInputs(std::vector<Input>& out);  // inputMutex, 통째로 꺼낸다
 
-void ClientThread(Client* client);   // 이태형
-void GameLoop();                     // 안병규
+// ---- 이태형 (ClientThread.cpp) ----
+void ClientThread(Client* client);
+
+// ---- 안병규 (GameLoop.cpp) ----
+void GameLoop();

@@ -15,11 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClientThread.cpp"><Filter>Server</Filter></ClCompile>
+    <ClCompile Include="GameLoop.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="GameServer.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="InputQueue.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="main.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="Server.cpp"><Filter>Server</Filter></ClCompile>
-    <ClCompile Include="Stub.cpp"><Filter>Server</Filter></ClCompile>
     <ClCompile Include="..\Common\Game\World.cpp"><Filter>Common\Game</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>

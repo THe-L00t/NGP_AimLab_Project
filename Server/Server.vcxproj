@@ -84,11 +84,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientThread.cpp" />
+    <ClCompile Include="GameLoop.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="InputQueue.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
-    <ClCompile Include="Stub.cpp" />
     <ClCompile Include="..\Common\Game\World.cpp" />
   </ItemGroup>
   <ItemGroup>
