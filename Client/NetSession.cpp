@@ -1,6 +1,7 @@
 ﻿#include <winsock2.h>
 #include <ws2tcpip.h>
 #include "NetSession.h"
+#include "Net/RecvPacket.h"
 #include <iostream>
 
 #pragma comment(lib, "ws2_32.lib")
@@ -71,7 +72,11 @@ void NetSession::RecvThread() {
     state_ = State::Connected;
     std::cout << "서버 접속: " << ip_ << ":" << port_ << " (" << nickname_ << ")\n";
 
-    // 수신 반복: RecvPacket → PushPacket (이태형 11/11)
+    // 수신 반복: 패킷 하나씩 받아 패킷 큐에 넣는다 (처리는 Main의 update)
+    Packet packet;
+    while (RecvPacket(s, packet)) {
+        PushPacket(packet);
+    }
 }
 
 void NetSession::CloseNetwork() {
