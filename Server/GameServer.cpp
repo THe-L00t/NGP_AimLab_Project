@@ -31,10 +31,15 @@ void HandleLogin(int slot, const C2S_LoginPacket& p) {
 
     if (!g_world.joinPlayer(slot)) {
         std::cout << "[로그인 실패] 자리 " << slot << "\n";
+        // 실패 응답 slot -1 (이태형 입장 거부)
         return;
     }
     std::memcpy(g_nicknames[slot], name, NAME_SIZE);
     std::cout << "[로그인] 자리 " << slot << " " << name << "\n";
+
+    // 입장 결과: 배정한 자리 번호
+    S2C_LoginResultPacket result{ MakeHeader<S2C_LoginResultPacket>(S2C_LOGIN_RESULT), static_cast<int8_t>(slot) };
+    SendTo(slot, reinterpret_cast<const char*>(&result), sizeof(result));
 }
 
 } // namespace
