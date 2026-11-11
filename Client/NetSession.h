@@ -25,6 +25,7 @@ public:
     void CloseNetwork();
 
     State state() const { return state_; }
+    int slot() const { return slot_; }   // 내 자리 (0~2), 입장 전 -1
 
     // ---- 안병규 (NetSend.cpp) ----
 
@@ -41,6 +42,7 @@ private:
     std::string ip_;
     uint16_t port_ = 0;
     bool wsaReady_ = false;
+    int slot_ = -1;   // 입장 결과로 받은 내 자리 (Main만 씀)
 
     std::atomic<uintptr_t> sock_{ ~uintptr_t(0) };  //SOCKET, ~0 = INVALID_SOCKET
     std::atomic<bool> closing_{ false };

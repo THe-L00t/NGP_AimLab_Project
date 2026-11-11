@@ -3,6 +3,7 @@
 #include "NetSession.h"
 #include "Net/RecvPacket.h"
 #include <iostream>
+#include <cstring>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -22,6 +23,32 @@ void NetSession::update(float) {
     std::vector<Packet> packets;
     PopPackets(packets);   // RecvThread가 넣어 둔 패킷을 통째로 꺼낸다
     for (const Packet& packet : packets) ProcessServerPacket(packet);
+}
+
+// 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
+void NetSession::ProcessServerPacket(const Packet& packet) {
+    switch (packet.header.type) {
+    case S2C_LOGIN_RESULT: {   // 입장 결과 반영
+        if (packet.header.size != sizeof(S2C_LoginResultPacket)) {
+            std::cout << "[크기 오류] 입장 결과 " << packet.header.size << "B\n";
+            break;
+        }
+        S2C_LoginResultPacket result;
+        std::memcpy(&result, &packet, sizeof(result));
+        if (result.slot < 0) break;   // 입장 거부 (slot -1)는 11/12
+        slot_ = result.slot;
+        state_ = State::LoggedIn;
+        std::cout << "[입장] 자리 " << slot_ << "\n";
+        break;
+    }
+    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
+        break;
+    case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
+        break;
+    default:
+        std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
+        break;
+    }
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
@@ -95,17 +122,4 @@ void NetSession::CloseNetwork() {
     closing_ = false;
 }
 
-// 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
-void NetSession::ProcessServerPacket(const Packet& packet) {
-    switch (packet.header.type) {
-    case S2C_LOGIN_RESULT:   // 입장 결과 반영 (이태형 11/11)
-        break;
-    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
-        break;
-    case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
-        break;
-    default:
-        std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
-        break;
-    }
-}
+
