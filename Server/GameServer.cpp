@@ -130,4 +130,21 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
     out.roundGoal = static_cast<uint16_t>(g_world.roundGoal());
     out.roundCleared = g_world.roundCleared() ? 1 : 0;
     out.failedRound = static_cast<int8_t>(g_world.failedRound());
+
+    // 플레이어: 들어온 자리만 채운다
+    uint8_t joinedCount = 0;
+    for (int slot = 0; slot < MAX_PLAYERS; ++slot) {
+        const World::PlayerInput* in = g_world.playerInput(slot);
+        if (!in) continue;
+
+        PlayerData& pd = out.players[slot];
+        pd.joined = 1;
+        std::memcpy(pd.nickname, g_nicknames[slot], NAME_SIZE);
+        pd.yaw = in->yaw;
+        pd.pitch = in->pitch;
+        pd.trigger = in->triggerHeld ? 1 : 0;
+        // ready·fireCount·hits·roundHits: 안병규 플레이어별 데이터 추가 후 채운다
+        ++joinedCount;
+    }
+    out.requiredPlayers = joinedCount;   // 들어온 모두가 준비해야 시작
 }
