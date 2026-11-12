@@ -1,4 +1,5 @@
 #include "GameServer.h"
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 
@@ -147,4 +148,35 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
         ++joinedCount;
     }
     out.requiredPlayers = joinedCount;   // 들어온 모두가 준비해야 시작
+
+    // 보스
+    const World::Boss& b = g_world.boss();
+    out.boss.alive = b.alive ? 1 : 0;
+    out.boss.x = b.pos.x;
+    out.boss.y = b.pos.y;
+    out.boss.z = b.pos.z;
+    out.boss.hp = static_cast<uint16_t>(b.hp);
+    out.boss.maxHp = static_cast<uint16_t>(b.maxHp);
+    out.boss.shield = b.shield ? 1 : 0;
+    out.boss.shieldsLeft = static_cast<uint8_t>(g_world.shieldsLeft());
+    out.boss.shieldTracked = g_world.shieldTracked() ? 1 : 0;
+    out.boss.shieldProgress = g_world.shieldProgress();
+
+    // 표적: 최대 MAX_TARGETS개
+    const std::vector<World::Target>& targets = g_world.targets();
+    const int count = std::min(static_cast<int>(targets.size()), MAX_TARGETS);
+    for (int i = 0; i < count; ++i) {
+        const World::Target& t = targets[i];
+        TargetData& td = out.targets[i];
+        td.x = t.pos.x;
+        td.y = t.pos.y;
+        td.z = t.pos.z;
+        td.vx = t.vel.x;
+        td.vy = t.vel.y;
+        td.vz = t.vel.z;
+        td.radius = t.radius;
+        td.progress = t.progress;
+        // aimedMask: 안병규 플레이어별 Tracking 진행도 추가 후 채운다
+    }
+    out.targetCount = static_cast<uint8_t>(count);
 }
