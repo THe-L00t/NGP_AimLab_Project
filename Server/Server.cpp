@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "Game/World.h"
 #include <iostream>
 
 std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
@@ -7,6 +8,14 @@ std::mutex clientsMutex;
 namespace {
 SOCKET      g_listenSock = INVALID_SOCKET;
 std::thread g_gameLoopThread;
+}
+
+bool ProcessReadyPacket(World& world, int slot, const Packet& packet) {
+    if (packet.header.type != C2S_READY || packet.header.size != sizeof(C2S_ReadyPacket)) return false;
+
+    const uint8_t ready = static_cast<uint8_t>(packet.body[0]);
+    if (ready > 1) return false;
+    return world.setReady(slot, ready != 0);
 }
 
 bool InitServer(uint16_t port) {

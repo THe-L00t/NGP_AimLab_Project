@@ -20,6 +20,7 @@ public:
 
     bool StartNetwork(const char* ip, uint16_t port);   // 재시도에도 사용
     void CloseNetwork();
+    bool SendReady(bool ready);
 
     State state() const { return state_; }
 

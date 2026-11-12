@@ -19,6 +19,9 @@ struct Client {
 extern std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
 extern std::mutex clientsMutex;
 
+class World;
+bool ProcessReadyPacket(World& world, int slot, const Packet& packet);
+
 bool InitServer(uint16_t port);
 void AcceptLoop();
 
