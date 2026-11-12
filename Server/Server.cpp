@@ -1,4 +1,4 @@
-#include "Server.h"
+﻿#include "Server.h"
 #include <iostream>
 
 std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
@@ -78,11 +78,17 @@ void AcceptLoop() {
         clientsMutex.unlock();
 
         if (!client) {
-            // 입장 거부 (이태형 11/12에서 보완)
+            // 입장 거부: 결과(-1)를 보내고, 클라가 닫을 때까지 기다렸다가 닫는다
             S2C_LoginResultPacket result{ MakeHeader<S2C_LoginResultPacket>(S2C_LOGIN_RESULT), -1 };
             SendPacket(sock, reinterpret_cast<const char*>(&result), sizeof(result));
 
             std::cout << "[접속 거부] " << ip << ":" << port << " 자리 없음\n";
+            // 바로 닫으면 클라가 보낸 패킷(로그인 등) 때문에 RST가 나서 클라가 거부 결과를 못 받는다
+            shutdown(sock, SD_SEND);
+            DWORD wait = 1000;   // 1초 동안 소식이 없으면 그냥 닫는다
+            setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&wait), sizeof(wait));
+            char buf[MAX_PACKET_SIZE];
+            while (recv(sock, buf, sizeof(buf), 0) > 0) {}   // 받은 건 버린다
             closesocket(sock);
             continue;
         }
