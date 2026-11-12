@@ -112,3 +112,22 @@ void ProcessPacket(int slot, const Packet& packet) {
         break;
     }
 }
+
+// 스냅샷: 진행 단계·시간·라운드·점수
+void BuildSnapshot(S2C_SnapshotPacket& out) {
+    out = {};
+    out.header = MakeHeader<S2C_SnapshotPacket>(S2C_SNAPSHOT);
+
+    out.phase = static_cast<uint8_t>(g_world.phase());
+    out.roundIndex = static_cast<uint8_t>(g_world.roundIndex());
+    out.phaseTimeLeft = g_world.phaseTimeLeft();
+
+    out.teamScore = static_cast<uint16_t>(g_world.score());
+    for (int r = 0; r < ROUND_COUNT; ++r) {
+        out.roundTeamScore[r] = static_cast<uint16_t>(g_world.roundScore(r));
+    }
+    out.trackingRemaining = static_cast<uint16_t>(g_world.trackingRemaining());
+    out.roundGoal = static_cast<uint16_t>(g_world.roundGoal());
+    out.roundCleared = g_world.roundCleared() ? 1 : 0;
+    out.failedRound = static_cast<int8_t>(g_world.failedRound());
+}
