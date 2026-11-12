@@ -38,6 +38,7 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
         if (result.slot < 0) {   // 입장 거부: 자리 없음
             std::cout << "[입장 거부] 자리 없음\n";
             state_ = State::Failed;
+            CloseNetwork();   // 서버가 기다리지 않도록 바로 닫는다
             break;
         }
         slot_ = result.slot;
