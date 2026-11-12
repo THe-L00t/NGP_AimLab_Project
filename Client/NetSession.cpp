@@ -35,7 +35,11 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
         }
         S2C_LoginResultPacket result;
         std::memcpy(&result, &packet, sizeof(result));
-        if (result.slot < 0) break;   // 입장 거부 (slot -1)는 11/12
+        if (result.slot < 0) {   // 입장 거부: 자리 없음
+            std::cout << "[입장 거부] 자리 없음\n";
+            state_ = State::Failed;
+            break;
+        }
         slot_ = result.slot;
         state_ = State::LoggedIn;
         std::cout << "[입장] 자리 " << slot_ << "\n";
