@@ -59,7 +59,14 @@ bool SendTo(int slot, const char* data, int size) {
 
 // 입력 큐에서 꺼낸 순서대로 불린다
 void ProcessPacket(int slot, const Packet& packet) {
-    switch (packet.header.type) {
+    // 로그인 전에는 로그인·끊김 알림만 받는다
+    const uint8_t type = packet.header.type;
+    if (type != C2S_LOGIN && type != PKT_DISCONNECT && !g_world.playerInput(slot)) {
+        std::cout << "[로그인 전 패킷 무시] 자리 " << slot << " 종류 " << static_cast<int>(type) << "\n";
+        return;
+    }
+
+    switch (type) {
     case PKT_DISCONNECT:
         // RemoveClient (한현우 11/23)
         break;
