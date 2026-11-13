@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 struct Client {
     SOCKET      sock = INVALID_SOCKET;
@@ -19,7 +20,18 @@ struct Client {
 extern std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
 extern std::mutex clientsMutex;
 
+struct Input {
+    int slot = -1;
+    Packet packet{};
+    bool disconnected = false;
+};
+
+void PushInput(const Input& input);
+void PopInputs(std::vector<Input>& out);
+void ProcessPacket(int slot, const Packet& packet);
+
 class World;
+extern World g_world;
 bool ProcessReadyPacket(World& world, int slot, const Packet& packet);
 
 bool InitServer(uint16_t port);
