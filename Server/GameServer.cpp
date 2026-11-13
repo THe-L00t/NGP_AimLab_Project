@@ -23,6 +23,11 @@ void LogSizeError(int slot, const Packet& packet) {
 
 // 로그인: 닉네임 정리 후 자리 배정
 void HandleLogin(int slot, const C2S_LoginPacket& p) {
+    if (g_world.playerInput(slot)) {   // 이미 들어온 자리: 닉네임·자리 그대로
+        std::cout << "[중복 로그인 무시] 자리 " << slot << "\n";
+        return;
+    }
+
     char name[NAME_SIZE] = {};
     std::memcpy(name, p.nickname, NAME_SIZE - 1);   // 끝 널 보장
     if (name[0] == '\0') {   // 비면 PlayerN
