@@ -34,6 +34,10 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
             break;
         }
         S2C_LoginResultPacket result;
+        if (state_ != State::Connected) {   // 입장 결과는 한 번만 반영한다
+            std::cout << "[무시] 입장 결과 (이미 받음)\n";
+            break;
+        }
         std::memcpy(&result, &packet, sizeof(result));
         if (result.slot < 0) {   // 입장 거부: 자리 없음
             std::cout << "[입장 거부] 자리 없음\n";
