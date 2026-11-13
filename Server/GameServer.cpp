@@ -27,6 +27,11 @@ void HandleLogin(int slot, const C2S_LoginPacket& p) {
         std::cout << "[중복 로그인 무시] 자리 " << slot << "\n";
         return;
     }
+    if (g_world.phase() != Phase::Title) {   // 게임 중에는 입장 불가
+        std::cout << "[로그인 실패] 자리 " << slot << " 게임 중\n";
+        // 실패 응답 slot -1 (이태형 입장 거부)
+        return;
+    }
 
     char name[NAME_SIZE] = {};
     std::memcpy(name, p.nickname, NAME_SIZE - 1);   // 끝 널 보장
