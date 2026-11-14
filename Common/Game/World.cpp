@@ -33,9 +33,28 @@ bool World::leavePlayer(int slot) {
     if (!isPlayerJoined(slot)) {
         return false;
     }
+    setReady(slot, false);
     setTrigger(slot, false);
     playerInputs_[slot] = {};
+    playerReady_[slot] = false;
     playerJoined_[slot] = false;
+    return true;
+}
+
+bool World::setReady(int slot, bool ready) {
+    if (!isPlayerJoined(slot) ||
+        (phase_ != Phase::Title && (phase_ != Phase::RoundIntro || roundIndex_ != 0))) return false;
+
+    playerReady_[slot] = ready;
+    if (phase_ == Phase::Title && allPlayersReady()) startMatch();
+    else if (phase_ == Phase::RoundIntro && !ready) resetToTitle();
+    return true;
+}
+
+bool World::allPlayersReady() const {
+    for (int slot = 0; slot < kMaxPlayers; ++slot) {
+        if (!isReady(slot)) return false;
+    }
     return true;
 }
 
@@ -157,7 +176,10 @@ void World::tick(float dt) {
         break;
 
     case Phase::FinalResult:
-        if (phaseTime_ <= 0.0f) resetToTitle();
+        if (phaseTime_ <= 0.0f) {
+            for (bool& ready : playerReady_) ready = false;
+            resetToTitle();
+        }
         break;
     }
 }

@@ -1,4 +1,4 @@
-#include "GameServer.h"
+﻿#include "GameServer.h"
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -91,8 +91,7 @@ void ProcessPacket(int slot, const Packet& packet) {
 
     case C2S_READY:
         if (const auto* p = As<C2S_ReadyPacket>(packet)) {
-            // 준비 반영 (안병규 11/12)
-            (void)p;
+            if (p->ready <= 1) g_world.setReady(slot, p->ready != 0);   // 준비 반영 (안병규 11/12)
         } else {
             LogSizeError(slot, packet);
         }

@@ -1,13 +1,44 @@
-#include "Server.h"
+﻿#include "Server.h"
+//#include "Game/World.h"
+//#include <chrono>
 #include <iostream>
 
 std::array<std::unique_ptr<Client>, MAX_PLAYERS> g_clients;
 std::mutex clientsMutex;
+//World g_world;
 
 namespace {
 SOCKET      g_listenSock = INVALID_SOCKET;
 std::thread g_gameLoopThread;
 }
+
+//bool ProcessReadyPacket(World& world, int slot, const Packet& packet) {
+//    if (packet.header.type != C2S_READY || packet.header.size != sizeof(C2S_ReadyPacket)) return false;
+//
+//    const uint8_t ready = static_cast<uint8_t>(packet.body[0]);
+//    if (ready > 1) return false;
+//    return world.setReady(slot, ready != 0);
+//}
+//
+//void GameLoop() {
+//    using Clock = std::chrono::steady_clock;
+//    constexpr float dt = 1.0f / 30.0f;
+//    const auto interval = std::chrono::duration_cast<Clock::duration>(
+//        std::chrono::duration<double>(1.0 / 30.0));
+//    auto nextTick = Clock::now();
+//    std::vector<Input> inputs;
+//
+//    while (true) {
+//        nextTick += interval;
+//        std::this_thread::sleep_until(nextTick);
+//        PopInputs(inputs);
+//        for (const Input& input : inputs) {
+//            if (input.disconnected) g_world.leavePlayer(input.slot);
+//            else ProcessPacket(input.slot, input.packet);
+//        }
+//        g_world.tick(dt);
+//    }
+//}
 
 bool InitServer(uint16_t port) {
     WSADATA wsa;

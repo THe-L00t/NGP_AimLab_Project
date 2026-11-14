@@ -1,6 +1,8 @@
 ﻿#include <winsock2.h>
 #include <ws2tcpip.h>
 #include "NetSession.h"
+#include "Net/SendPacket.h"
+#include <cstring>
 #include <iostream>
 
 #pragma comment(lib, "ws2_32.lib")
@@ -68,10 +70,34 @@ void NetSession::RecvThread() {
         state_ = State::Failed;
         return;
     }
-    state_ = State::Connected;
     std::cout << "서버 접속: " << ip_ << ":" << port_ << " (" << nickname_ << ")\n";
 
+    if (!SendLogin()) {
+        std::cout << "입장 요청 전송 실패\n";
+        state_ = State::Failed;
+        return;
+    }
+
+    state_ = State::Connected;
+
     // 수신 반복: RecvPacket → PushPacket (이태형 11/11)
+}
+
+bool NetSession::SendLogin() {
+    if (nickname_.empty() || nickname_.size() >= NAME_SIZE) return false;
+
+    C2S_LoginPacket packet{};
+    packet.header = MakeHeader<C2S_LoginPacket>(C2S_LOGIN);
+    std::memcpy(packet.nickname, nickname_.data(), nickname_.size());
+    return SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+bool NetSession::SendReady(bool ready) {
+    const State current = state_;
+    if (current != State::Connected && current != State::LoggedIn) return false;
+
+    C2S_ReadyPacket packet{ MakeHeader<C2S_ReadyPacket>(C2S_READY), static_cast<uint8_t>(ready) };
+    return SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void NetSession::CloseNetwork() {
