@@ -4,6 +4,7 @@
 #include "Net/SendPacket.h"
 #include <cstring>
 #include <iostream>
+#include <cstring>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -20,7 +21,44 @@ NetSession::~NetSession() {
 }
 
 void NetSession::update(float) {
-    // ProcessServerPacket (이태형 11/11)
+    std::vector<Packet> packets;
+    PopPackets(packets);   // RecvThread가 넣어 둔 패킷을 통째로 꺼낸다
+    for (const Packet& packet : packets) ProcessServerPacket(packet);
+}
+
+// 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
+void NetSession::ProcessServerPacket(const Packet& packet) {
+    switch (packet.header.type) {
+    case S2C_LOGIN_RESULT: {   // 입장 결과 반영
+        if (packet.header.size != sizeof(S2C_LoginResultPacket)) {
+            std::cout << "[크기 오류] 입장 결과 " << packet.header.size << "B\n";
+            break;
+        }
+        S2C_LoginResultPacket result;
+        if (state_ != State::Connected) {   // 입장 결과는 한 번만 반영한다
+            std::cout << "[무시] 입장 결과 (이미 받음)\n";
+            break;
+        }
+        std::memcpy(&result, &packet, sizeof(result));
+        if (result.slot < 0) {   // 입장 거부: 자리 없음
+            std::cout << "[입장 거부] 자리 없음\n";
+            state_ = State::Failed;
+            CloseNetwork();   // 서버가 기다리지 않도록 바로 닫는다
+            break;
+        }
+        slot_ = result.slot;
+        state_ = State::LoggedIn;
+        std::cout << "[입장] 자리 " << slot_ << "\n";
+        break;
+    }
+    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
+        break;
+    case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
+        break;
+    default:
+        std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
+        break;
+    }
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
@@ -81,6 +119,11 @@ void NetSession::RecvThread() {
     state_ = State::Connected;
 
     // 수신 반복: RecvPacket → PushPacket (이태형 11/11)
+    // 수신 반복: 패킷 하나씩 받아 패킷 큐에 넣는다 (처리는 Main의 update)
+    Packet packet;
+    while (RecvPacket(s, packet)) {
+        PushPacket(packet);
+    }
 }
 
 bool NetSession::SendLogin() {
@@ -113,3 +156,5 @@ void NetSession::CloseNetwork() {
     }
     closing_ = false;
 }
+
+

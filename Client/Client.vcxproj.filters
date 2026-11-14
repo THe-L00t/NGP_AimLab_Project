@@ -93,6 +93,7 @@
     <ClCompile Include="NetSession.cpp">
       <Filter>Session</Filter>
     </ClCompile>
+    <ClCompile Include="PacketQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Game\AimMath.h">
@@ -178,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="NetSession.h">
       <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Net\RecvPacket.h">
+      <Filter>Common\Net</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
