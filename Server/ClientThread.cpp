@@ -31,6 +31,11 @@ void ClientThread(Client* client) {
                 << " " << packet.header.size << "B\n";
             continue;
         }
+        // 받은 패킷 → 입력 큐(꺼내서 처리하는 건 GameLoop)
+        Input input;
+        input.slot = slot;
+        input.packet = packet;
+        PushInput(input);
     }
     std::cout << "[끊김] 자리 " << slot << "\n";   // 끊김 알림
 }

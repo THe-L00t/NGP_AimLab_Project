@@ -1,6 +1,7 @@
 ﻿#include <winsock2.h>
 #include <ws2tcpip.h>
 #include "NetSession.h"
+#include "Net/RecvPacket.h"
 #include "Net/SendPacket.h"
 #include <cstring>
 #include <iostream>

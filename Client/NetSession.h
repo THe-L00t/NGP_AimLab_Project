@@ -54,4 +54,5 @@ private:
     std::vector<Packet> packets_;   // 클라 패킷 큐: RecvThread가 넣고 Main이 꺼낸다
 
     // ---- 안병규 ----
+    bool SendLogin();
 };
