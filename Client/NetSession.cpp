@@ -113,6 +113,24 @@ void NetSession::ApplySnapshot(const S2C_SnapshotPacket& p) {
     s.shieldsLeft = b.shieldsLeft;
     s.shieldTracked = b.shieldTracked != 0;
     s.shieldProgress = b.shieldProgress;
+
+    // 자리별 플레이어
+    s.requiredPlayers = p.requiredPlayers;
+    for (int i = 0; i < MAX_PLAYERS; ++i) {
+        const PlayerData& d = p.players[i];
+        PlayerState& ps = s.players[i];
+        ps.joined = d.joined != 0;
+        ps.ready = d.ready != 0;
+        char name[NAME_SIZE] = {};
+        std::memcpy(name, d.nickname, NAME_SIZE - 1);   // 끝 널 보장
+        ps.nickname = name;
+        ps.yaw = d.yaw;
+        ps.pitch = d.pitch;
+        ps.trigger = d.trigger != 0;
+        ps.fireCount = d.fireCount;
+        ps.hits = d.hits;
+        for (int r = 0; r < ROUND_COUNT; ++r) ps.roundHits[r] = d.roundHits[r];
+    }
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
