@@ -9,3 +9,4 @@ void ProcessPacket(int slot, const Packet& packet);
 bool SendTo(int slot, const char* data, int size);
 void BuildSnapshot(S2C_SnapshotPacket& out);   // World 상태 → S2C_SNAPSHOT
 EventData ToEventData(const GameEvent& e);
+void BuildEvents(std::vector<S2C_EventsPacket>& out);   // World 사건 → S2C_EVENTS (BroadcastState에 넘긴다)

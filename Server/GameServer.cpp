@@ -207,3 +207,19 @@ EventData ToEventData(const GameEvent& e) {
     d.z = e.pos.z;
     return d;
 }
+
+// 사건 패킷: 이번 틱 World 사건을 담는다 (사건이 없으면 out은 빈 채로)
+void BuildEvents(std::vector<S2C_EventsPacket>& out) {
+    out.clear();
+    std::vector<GameEvent> events;
+    g_world.drainEvents(events);
+    if (events.empty()) return;
+
+    S2C_EventsPacket p{};
+    const int count = std::min(static_cast<int>(events.size()), MAX_EVENTS);
+    for (int i = 0; i < count; ++i) p.events[i] = ToEventData(events[i]);
+    p.count = static_cast<uint8_t>(count);
+    p.header.type = S2C_EVENTS;
+    p.header.size = static_cast<uint16_t>(sizeof(PacketHeader) + sizeof(p.count) + count * sizeof(EventData));   // count개만 보낸다
+    out.push_back(p);
+}
