@@ -2,7 +2,9 @@
 // 화면이 그릴 게임 상태 (S2C_SNAPSHOT 반영은 이태형 11/16)
 #include "Game/GameConfig.h"
 #include "Game/GameTypes.h"
+#include "Net/Protocol.h"
 #include <glm/glm.hpp>
+#include <string>
 #include <vector>
 
 struct TargetState {
@@ -18,6 +20,19 @@ struct BossState {
     int hp = 0;
     int maxHp = 0;
     bool shield = false;
+};
+
+// 자리별 플레이어 (네트워크 모드에서 서버 스냅샷으로 채운다)
+struct PlayerState {
+    bool joined = false;
+    bool ready = false;
+    std::string nickname;
+    float yaw = 0.0f;      // 다른 플레이어 시선 표시용
+    float pitch = 0.0f;
+    bool trigger = false;
+    int fireCount = 0;     // 쏜 횟수 (255 다음 0)
+    int hits = 0;
+    int roundHits[ROUND_COUNT] = {};
 };
 
 struct Snapshot {
@@ -36,6 +51,10 @@ struct Snapshot {
     float shieldProgress = 0.0f;
     int shieldsLeft = 0;
     bool shieldTracked = false;
+
+    // 네트워크 모드
+    PlayerState players[MAX_PLAYERS];
+    int requiredPlayers = 0;   // 시작에 필요한 준비 인원
 
     RoundType round() const { return kRoundOrder[roundIndex]; }
 };
