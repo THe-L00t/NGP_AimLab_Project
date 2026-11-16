@@ -94,6 +94,25 @@ void NetSession::ApplySnapshot(const S2C_SnapshotPacket& p) {
     s.roundCleared = p.roundCleared != 0;
     s.failedRound = p.failedRound;
     s.trackingRemaining = p.trackingRemaining;
+
+    // 표적
+    s.targets.clear();
+    for (int i = 0; i < p.targetCount; ++i) {
+        const TargetData& t = p.targets[i];
+        s.targets.push_back({ glm::vec3(t.x, t.y, t.z), t.radius, t.progress });
+    }
+
+    // 보스 (크기는 늘 같아서 서버가 보내지 않는다)
+    const BossData& b = p.boss;
+    s.boss.alive = b.alive != 0;
+    s.boss.pos = glm::vec3(b.x, b.y, b.z);
+    s.boss.radius = cfg::kBossRadius;
+    s.boss.hp = b.hp;
+    s.boss.maxHp = b.maxHp;
+    s.boss.shield = b.shield != 0;
+    s.shieldsLeft = b.shieldsLeft;
+    s.shieldTracked = b.shieldTracked != 0;
+    s.shieldProgress = b.shieldProgress;
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
