@@ -41,3 +41,4 @@ void ClientThread(Client* client);
 
 // ---- 안병규 (GameLoop.cpp) ----
 void GameLoop();
+void BroadcastState(const std::vector<S2C_EventsPacket>& events = {});

@@ -22,5 +22,27 @@ void GameLoop() {
             ProcessPacket(input.slot, input.packet);
         }
         g_world.tick(dt);
+        BroadcastState();
+    }
+}
+
+void BroadcastState(const std::vector<S2C_EventsPacket>& events) {
+    S2C_SnapshotPacket snapshot{};
+    BuildSnapshot(snapshot);
+    for (int slot = 0; slot < MAX_PLAYERS; ++slot) {
+        if (!snapshot.players[slot].joined) continue;
+        bool sent = SendTo(slot, reinterpret_cast<const char*>(&snapshot), snapshot.header.size);
+        for (const auto& packet : events) {
+            if (!sent) break;
+            const auto size = sizeof(PacketHeader) + sizeof(packet.count) + packet.count * sizeof(EventData);
+            if (packet.header.type != S2C_EVENTS || packet.count == 0 ||
+                packet.count > MAX_EVENTS || packet.header.size != size) continue;
+            sent = SendTo(slot, reinterpret_cast<const char*>(&packet), packet.header.size);
+        }
+        if (!sent) {
+            Input input{ slot, {} };
+            input.packet.header = { static_cast<uint16_t>(sizeof(PacketHeader)), PKT_DISCONNECT };
+            PushInput(input);
+        }
     }
 }
