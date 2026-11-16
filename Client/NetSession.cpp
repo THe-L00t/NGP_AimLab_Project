@@ -52,14 +52,48 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
         std::cout << "[입장] 자리 " << slot_ << "\n";
         break;
     }
-    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
+    case S2C_SNAPSHOT: {     // 받은 스냅샷 반영 (이태형 11/16)
+        if (packet.header.size != sizeof(S2C_SnapshotPacket)) {
+            std::cout << "[크기 오류] 스냅샷 " << packet.header.size << "B\n";
+            break;
+        }
+        S2C_SnapshotPacket snap;
+        std::memcpy(&snap, &packet, sizeof(snap));
+        ApplySnapshot(snap);
         break;
+    }
     case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
         break;
     default:
         std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
         break;
     }
+}
+
+static_assert(ROUND_COUNT == cfg::kRoundCount, "패킷과 화면의 라운드 수가 같아야 한다");
+
+// 받은 스냅샷을 화면이 쓰는 Snapshot으로 옮긴다
+// Main 스레드(update)에서만 불리므로 snapshot_에는 잠금이 없다 (잠금은 패킷 큐가 맡는다)
+void NetSession::ApplySnapshot(const S2C_SnapshotPacket& p) {
+    // 화면이 배열 칸 번호로 쓰는 값이 범위 밖이면 통째로 버린다
+    if (p.phase > static_cast<uint8_t>(Phase::FinalResult) || p.roundIndex >= ROUND_COUNT ||
+        p.failedRound < -1 || p.failedRound >= ROUND_COUNT || p.targetCount > MAX_TARGETS) {
+        std::cout << "[잘못된 스냅샷] 단계 " << int(p.phase) << " 라운드 " << int(p.roundIndex)
+                  << " 실패 라운드 " << int(p.failedRound) << " 표적 " << int(p.targetCount) << "\n";
+        return;
+    }
+
+    Snapshot& s = snapshot_;
+    s.phase = static_cast<Phase>(p.phase);
+    s.phaseTimeLeft = p.phaseTimeLeft;
+    s.roundIndex = p.roundIndex;
+
+    s.score = p.teamScore;
+    for (int r = 0; r < ROUND_COUNT; ++r) s.roundScore[r] = p.roundTeamScore[r];
+    s.roundGoal = p.roundGoal;
+    s.roundCleared = p.roundCleared != 0;
+    s.failedRound = p.failedRound;
+    s.trackingRemaining = p.trackingRemaining;
 }
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
