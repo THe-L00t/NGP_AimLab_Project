@@ -196,3 +196,14 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
     }
     out.targetCount = static_cast<uint8_t>(count);
 }
+
+// 사건 하나: World 사건 → EventData
+EventData ToEventData(const GameEvent& e) {
+    EventData d{};
+    d.kind = static_cast<uint8_t>(e.kind);
+    d.slot = -1;   // 누가 일으켰는지: 안병규 World 사건에 자리 추가 후 채운다
+    d.x = e.pos.x;
+    d.y = e.pos.y;
+    d.z = e.pos.z;
+    return d;
+}
