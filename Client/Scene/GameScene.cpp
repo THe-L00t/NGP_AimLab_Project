@@ -55,7 +55,7 @@ void GameScene::update(App& app, float dt) {
     // 라운드 시작 시 표적 구역을 보게 한다
     if (s.phase == Phase::RoundIntro && lastPhase_ != Phase::RoundIntro) {
         float yaw = 0.0f, pitch = 0.0f;
-        aim::lookAngles(aim::eyePosition(), World::areaCenter(s.round()), yaw, pitch);
+        aim::lookAngles(scene::myEye(app), World::areaCenter(s.round()), yaw, pitch);
         app.camera().setAngles(yaw, pitch);
         std::cout << "라운드 " << (s.roundIndex + 1) << " " << roundName(s.round()) << "\n";
     }

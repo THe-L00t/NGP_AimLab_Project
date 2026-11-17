@@ -9,7 +9,7 @@
 
 void TitleScene::onEnter(App& app) {
     float yaw = 0.0f, pitch = 0.0f;
-    aim::lookAngles(aim::eyePosition(), aim::arenaCenter(), yaw, pitch);
+    aim::lookAngles(scene::myEye(app), aim::arenaCenter(), yaw, pitch);
     app.camera().setAngles(yaw, pitch);
 }
 

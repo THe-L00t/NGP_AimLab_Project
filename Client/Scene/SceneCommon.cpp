@@ -20,11 +20,24 @@ std::string format(const char* fmt, ...) {
     return buf;
 }
 
+glm::vec3 seatEye(int /*slot*/) {
+    return aim::eyePosition();
+}
+
+int mySlot(App& app) {
+    const NetSession* net = app.net();
+    return net && net->slot() >= 0 ? net->slot() : 0;
+}
+
+glm::vec3 myEye(App& app) {
+    return seatEye(mySlot(app));
+}
+
 void updateLook(App& app) {
     const glm::vec2 d = app.input().lookDelta();
     Camera& cam = app.camera();
     if (d.x != 0.0f || d.y != 0.0f) cam.addLook(d.x, d.y);
-    cam.setPosition(aim::eyePosition());
+    cam.setPosition(myEye(app));   // 내 자리에서 본다
     if (!app.net()) app.world().setAim(cam.yaw(), cam.pitch());
     // 네트워크 모드: 시선 전송 (안병규 11/17)
 }
