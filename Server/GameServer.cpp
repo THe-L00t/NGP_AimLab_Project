@@ -1,5 +1,6 @@
 ﻿#include "GameServer.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 
@@ -100,7 +101,9 @@ void ProcessPacket(int slot, const Packet& packet) {
     case C2S_AIM:
         if (const auto* p = As<C2S_AimPacket>(packet)) {
             // 시선 반영 (안병규 11/17)
-            (void)p;
+            if (std::isfinite(p->yaw) && std::isfinite(p->pitch)) {
+                g_world.setAim(slot, p->yaw, p->pitch);
+            }
         } else {
             LogSizeError(slot, packet);
         }

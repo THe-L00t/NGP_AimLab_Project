@@ -3,6 +3,7 @@
 #include "NetSession.h"
 #include "Net/RecvPacket.h"
 #include "Net/SendPacket.h"
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <cstring>
@@ -64,6 +65,8 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
 
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     CloseNetwork();
+    aimSent_ = false;
+    nextAimSend_ = {};
     ip_ = ip;
     port_ = port;
 
@@ -142,6 +145,21 @@ bool NetSession::SendReady(bool ready) {
 
     C2S_ReadyPacket packet{ MakeHeader<C2S_ReadyPacket>(C2S_READY), static_cast<uint8_t>(ready) };
     return SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+void NetSession::SendAim(float yaw, float pitch) {
+    if (state_ != State::LoggedIn || !std::isfinite(yaw) || !std::isfinite(pitch)) return;
+    const auto now = std::chrono::steady_clock::now();
+    if (now < nextAimSend_ || (aimSent_ && yaw == lastAimYaw_ && pitch == lastAimPitch_)) return;
+
+    C2S_AimPacket packet{ MakeHeader<C2S_AimPacket>(C2S_AIM), yaw, pitch };
+    if (SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet))) {
+        aimSent_ = true;
+        lastAimYaw_ = yaw;
+        lastAimPitch_ = pitch;
+    }
+    nextAimSend_ = std::chrono::steady_clock::now() +
+        std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(1.0 / 30.0));
 }
 
 void NetSession::CloseNetwork() {
