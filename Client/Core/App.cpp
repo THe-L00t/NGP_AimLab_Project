@@ -111,8 +111,9 @@ void App::frame() {
         std::cout << "마우스 시점 " << (input_.mouseLookEnabled() ? "켜짐" : "꺼짐 (Esc로 다시 켜기)") << "\n";
     }
 
-    session_.update(dt);
+    // 네트워크 모드는 받은 패킷만 반영하고 클라 World를 진행하지 않는다
     if (net_) net_->update(dt);
+    else session_.update(dt);
     handleEvents();
     debris_.update(dt, cfg::kRoomFloorY);
     if (settings_.infoTimer > 0.0f) settings_.infoTimer -= dt;

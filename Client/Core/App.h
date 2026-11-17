@@ -22,7 +22,9 @@ public:
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }
     World& world() { return world_; }
-    Session& session() { return session_; }
+    // 네트워크 모드면 받은 스냅샷, 1인 모드면 LocalSession
+    Session& session() { return net_ ? static_cast<Session&>(*net_) : session_; }
+    NetSession* net() { return net_.get(); }   // 1인 모드면 nullptr
     Camera& camera() { return camera_; }
     DebrisSystem& debris() { return debris_; }
     Settings& settings() { return settings_; }

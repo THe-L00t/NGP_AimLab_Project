@@ -25,7 +25,8 @@ void updateLook(App& app) {
     Camera& cam = app.camera();
     if (d.x != 0.0f || d.y != 0.0f) cam.addLook(d.x, d.y);
     cam.setPosition(aim::eyePosition());
-    app.world().setAim(cam.yaw(), cam.pitch());
+    if (!app.net()) app.world().setAim(cam.yaw(), cam.pitch());
+    // 네트워크 모드: 시선 전송 (안병규 11/17)
 }
 
 void handleCommonKeys(App& app, bool allowSettings) {

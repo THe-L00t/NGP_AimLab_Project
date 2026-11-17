@@ -24,8 +24,11 @@ void TitleScene::update(App& app, float) {
     scene::handleCommonKeys(app, true);
 
     if (app.input().keyPressed('r')) {
-        app.world().start();
-        std::cout << "게임 시작\n";
+        if (!app.net()) {   // 1인 모드: 바로 시작
+            app.world().start();
+            std::cout << "게임 시작\n";
+        }
+        // 네트워크 모드: 준비 전송 (안병규)
     }
 }
 
