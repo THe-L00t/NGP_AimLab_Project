@@ -149,6 +149,14 @@ void NetSession::ApplyEvents(const Packet& packet) {
         return;
     }
 
+    // 없는 종류가 섞여 있으면 통째로 버린다
+    for (int i = 0; i < p.count; ++i) {
+        if (p.events[i].kind > static_cast<uint8_t>(EventKind::BossShieldBroken)) {
+            std::cout << "[잘못된 사건] 종류 " << int(p.events[i].kind) << "\n";
+            return;
+        }
+    }
+
     for (int i = 0; i < p.count; ++i) {
         const EventData& e = p.events[i];
         events_.push_back({ static_cast<EventKind>(e.kind), glm::vec3(e.x, e.y, e.z) });
