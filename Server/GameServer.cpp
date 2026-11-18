@@ -185,6 +185,11 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
     // 표적: 최대 MAX_TARGETS개
     const std::vector<World::Target>& targets = g_world.targets();
     const int count = std::min(static_cast<int>(targets.size()), MAX_TARGETS);
+    static bool overWarned = false;   // 30Hz로 반복되지 않게 한 번만 알린다
+    if (static_cast<int>(targets.size()) > MAX_TARGETS && !overWarned) {
+        std::cout << "[스냅샷] 표적 " << targets.size() << "개 중 " << MAX_TARGETS << "개만 보냄\n";
+        overWarned = true;
+    }
     for (int i = 0; i < count; ++i) {
         const World::Target& t = targets[i];
         TargetData& td = out.targets[i];
