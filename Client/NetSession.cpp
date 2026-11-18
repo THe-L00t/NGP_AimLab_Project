@@ -27,6 +27,12 @@ void NetSession::update(float) {
     for (const Packet& packet : packets) ProcessServerPacket(packet);
 }
 
+// 받아 둔 사건을 화면에 넘기고 비운다 (Main)
+void NetSession::drainEvents(std::vector<GameEvent>& out) {
+    out.insert(out.end(), events_.begin(), events_.end());
+    events_.clear();
+}
+
 // 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
 void NetSession::ProcessServerPacket(const Packet& packet) {
     switch (packet.header.type) {

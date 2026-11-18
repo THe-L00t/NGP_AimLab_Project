@@ -19,6 +19,7 @@ public:
 
     const Snapshot& snapshot() const override { return snapshot_; }
     void update(float dt) override;
+    void drainEvents(std::vector<GameEvent>& out) override;   // 받은 사건 (Main)
 
     // ---- 이태형 (NetSession.cpp · PacketQueue.cpp) ----
     bool StartNetwork(const char* ip, uint16_t port);   // 재시도에도 사용

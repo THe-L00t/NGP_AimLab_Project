@@ -127,7 +127,7 @@ void App::frame() {
 
 void App::handleEvents() {
     frameEvents_.clear();
-    world_.drainEvents(frameEvents_);
+    session().drainEvents(frameEvents_);   // 1인 모드: World 사건, 네트워크 모드: 받은 사건
     for (const GameEvent& e : frameEvents_) {
         switch (e.kind) {
         case EventKind::TargetHit:
