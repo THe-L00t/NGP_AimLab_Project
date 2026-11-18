@@ -163,7 +163,8 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
         pd.yaw = in->yaw;
         pd.pitch = in->pitch;
         pd.trigger = in->triggerHeld ? 1 : 0;
-        // ready·fireCount·hits·roundHits: 안병규 플레이어별 데이터 추가 후 채운다
+        pd.ready = g_world.isReady(slot) ? 1 : 0;
+        // fireCount·hits·roundHits: 안병규 플레이어별 데이터 추가 후 채운다
         ++joinedCount;
     }
     out.requiredPlayers = joinedCount;   // 들어온 모두가 준비해야 시작
