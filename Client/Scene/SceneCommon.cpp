@@ -9,6 +9,14 @@
 #include <cstdio>
 #include <iostream>
 
+namespace {
+constexpr float kAimMarkerDistance = cfg::kEyeDistance;   // 눈에서 맵 중앙까지
+constexpr float kAimMarkerRadius = 0.15f;
+const glm::vec3 kPlayerColor[MAX_PLAYERS] = {             // 자리별 시선 점 색
+    { 1.0f, 0.55f, 0.1f }, { 0.4f, 1.0f, 0.3f }, { 0.85f, 0.45f, 1.0f }
+};
+} // namespace
+
 namespace scene {
 
 std::string format(const char* fmt, ...) {
@@ -20,12 +28,26 @@ std::string format(const char* fmt, ...) {
     return buf;
 }
 
+glm::vec3 seatEye(int /*slot*/) {
+    return aim::eyePosition();
+}
+
+int mySlot(App& app) {
+    const NetSession* net = app.net();
+    return net && net->slot() >= 0 ? net->slot() : 0;
+}
+
+glm::vec3 myEye(App& app) {
+    return seatEye(mySlot(app));
+}
+
 void updateLook(App& app) {
     const glm::vec2 d = app.input().lookDelta();
     Camera& cam = app.camera();
     if (d.x != 0.0f || d.y != 0.0f) cam.addLook(d.x, d.y);
-    cam.setPosition(aim::eyePosition());
-    app.world().setAim(cam.yaw(), cam.pitch());
+    cam.setPosition(myEye(app));   // 내 자리에서 본다
+    if (!app.net()) app.world().setAim(cam.yaw(), cam.pitch());
+    // 네트워크 모드: 시선 전송 (안병규 11/17)
 }
 
 void handleCommonKeys(App& app, bool allowSettings) {
@@ -70,6 +92,16 @@ void drawWorld(App& app, float bossFlash) {
         const glm::vec3 base = boss.shield ? palette::kShield : palette::kBoss;
         const glm::vec3 color = glm::mix(base, palette::kWhite, std::clamp(bossFlash, 0.0f, 1.0f));
         r.drawSphere(boss.pos, boss.radius, color);
+    }
+
+    // 다른 플레이어 시선: 그 사람이 보는 방향의 점 (네트워크 모드, 스냅샷의 yaw·pitch)
+    if (const NetSession* net = app.net()) {
+        for (int i = 0; i < MAX_PLAYERS; ++i) {
+            const PlayerState& p = s.players[i];
+            if (!p.joined || i == net->slot()) continue;
+            const glm::vec3 point = seatEye(i) + aim::direction(p.yaw, p.pitch) * kAimMarkerDistance;
+            r.drawSphere(point, kAimMarkerRadius, kPlayerColor[i]);
+        }
     }
 
     // 파편

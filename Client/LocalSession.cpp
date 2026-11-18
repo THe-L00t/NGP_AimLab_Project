@@ -11,6 +11,10 @@ void LocalSession::update(float dt) {
     copyState();
 }
 
+void LocalSession::drainEvents(std::vector<GameEvent>& out) {
+    world_.drainEvents(out);
+}
+
 void LocalSession::copyState() {
     Snapshot& s = snapshot_;
     s.phase = world_.phase();

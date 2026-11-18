@@ -11,6 +11,7 @@ public:
 
     const Snapshot& snapshot() const override { return snapshot_; }
     void update(float dt) override;
+    void drainEvents(std::vector<GameEvent>& out) override;
 
 private:
     void copyState();

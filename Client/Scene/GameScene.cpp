@@ -41,7 +41,7 @@ void GameScene::onEnter(App& app) {
 }
 
 void GameScene::onExit(App& app) {
-    if (triggerHeld_) app.world().setTrigger(false);
+    if (triggerHeld_ && !app.net()) app.world().setTrigger(false);
     triggerHeld_ = false;
 }
 
@@ -55,7 +55,7 @@ void GameScene::update(App& app, float dt) {
     // 라운드 시작 시 표적 구역을 보게 한다
     if (s.phase == Phase::RoundIntro && lastPhase_ != Phase::RoundIntro) {
         float yaw = 0.0f, pitch = 0.0f;
-        aim::lookAngles(aim::eyePosition(), World::areaCenter(s.round()), yaw, pitch);
+        aim::lookAngles(scene::myEye(app), World::areaCenter(s.round()), yaw, pitch);
         app.camera().setAngles(yaw, pitch);
         std::cout << "라운드 " << (s.roundIndex + 1) << " " << roundName(s.round()) << "\n";
     }
@@ -73,13 +73,15 @@ void GameScene::update(App& app, float dt) {
 
     // Shooting·Boss: 클릭 = 한 발
     if (playing && round != RoundType::Tracking && app.input().mousePressed(MouseButton::Left)) {
-        app.world().fire();
+        if (!app.net()) app.world().fire();
+        // 네트워크 모드: 사격 전송 (안병규 11/19)
     }
     // Tracking·보호막: 누르고 있는 동안 판정
     const bool wantTrigger = playing && (round == RoundType::Tracking || round == RoundType::Boss) &&
                              app.input().mouseDown(MouseButton::Left);
     if (wantTrigger != triggerHeld_) {
-        app.world().setTrigger(wantTrigger);
+        if (!app.net()) app.world().setTrigger(wantTrigger);
+        // 네트워크 모드: 누르기 전송 (안병규 11/23)
         triggerHeld_ = wantTrigger;
     }
 

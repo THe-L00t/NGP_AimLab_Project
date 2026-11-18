@@ -28,6 +28,12 @@ void NetSession::update(float) {
     for (const Packet& packet : packets) ProcessServerPacket(packet);
 }
 
+// 받아 둔 사건을 화면에 넘기고 비운다 (Main)
+void NetSession::drainEvents(std::vector<GameEvent>& out) {
+    out.insert(out.end(), events_.begin(), events_.end());
+    events_.clear();
+}
+
 // 받은 패킷 하나를 종류별로 처리한다 (Main 스레드)
 void NetSession::ProcessServerPacket(const Packet& packet) {
     switch (packet.header.type) {
@@ -53,13 +59,114 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
         std::cout << "[입장] 자리 " << slot_ << "\n";
         break;
     }
-    case S2C_SNAPSHOT:       // 받은 스냅샷 반영 (이태형 11/16)
+    case S2C_SNAPSHOT: {     // 받은 스냅샷 반영 (이태형 11/16)
+        if (packet.header.size != sizeof(S2C_SnapshotPacket)) {
+            std::cout << "[크기 오류] 스냅샷 " << packet.header.size << "B\n";
+            break;
+        }
+        S2C_SnapshotPacket snap;
+        std::memcpy(&snap, &packet, sizeof(snap));
+        ApplySnapshot(snap);
         break;
+    }
     case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
+        ApplyEvents(packet);
         break;
     default:
         std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
         break;
+    }
+}
+
+static_assert(ROUND_COUNT == cfg::kRoundCount, "패킷과 화면의 라운드 수가 같아야 한다");
+
+// 받은 스냅샷을 화면이 쓰는 Snapshot으로 옮긴다
+// Main 스레드(update)에서만 불리므로 snapshot_에는 잠금이 없다 (잠금은 패킷 큐가 맡는다)
+void NetSession::ApplySnapshot(const S2C_SnapshotPacket& p) {
+    // 화면이 배열 칸 번호로 쓰는 값이 범위 밖이면 통째로 버린다
+    if (p.phase > static_cast<uint8_t>(Phase::FinalResult) || p.roundIndex >= ROUND_COUNT ||
+        p.failedRound < -1 || p.failedRound >= ROUND_COUNT || p.targetCount > MAX_TARGETS) {
+        std::cout << "[잘못된 스냅샷] 단계 " << int(p.phase) << " 라운드 " << int(p.roundIndex)
+                  << " 실패 라운드 " << int(p.failedRound) << " 표적 " << int(p.targetCount) << "\n";
+        return;
+    }
+
+    Snapshot& s = snapshot_;
+    s.phase = static_cast<Phase>(p.phase);
+    s.phaseTimeLeft = p.phaseTimeLeft;
+    s.roundIndex = p.roundIndex;
+
+    s.score = p.teamScore;
+    for (int r = 0; r < ROUND_COUNT; ++r) s.roundScore[r] = p.roundTeamScore[r];
+    s.roundGoal = p.roundGoal;
+    s.roundCleared = p.roundCleared != 0;
+    s.failedRound = p.failedRound;
+    s.trackingRemaining = p.trackingRemaining;
+
+    // 표적
+    s.targets.clear();
+    for (int i = 0; i < p.targetCount; ++i) {
+        const TargetData& t = p.targets[i];
+        s.targets.push_back({ glm::vec3(t.x, t.y, t.z), t.radius, t.progress });
+    }
+
+    // 보스 (크기는 늘 같아서 서버가 보내지 않는다)
+    const BossData& b = p.boss;
+    s.boss.alive = b.alive != 0;
+    s.boss.pos = glm::vec3(b.x, b.y, b.z);
+    s.boss.radius = cfg::kBossRadius;
+    s.boss.hp = b.hp;
+    s.boss.maxHp = b.maxHp;
+    s.boss.shield = b.shield != 0;
+    s.shieldsLeft = b.shieldsLeft;
+    s.shieldTracked = b.shieldTracked != 0;
+    s.shieldProgress = b.shieldProgress;
+
+    // 자리별 플레이어
+    s.requiredPlayers = p.requiredPlayers;
+    for (int i = 0; i < MAX_PLAYERS; ++i) {
+        const PlayerData& d = p.players[i];
+        PlayerState& ps = s.players[i];
+        ps.joined = d.joined != 0;
+        ps.ready = d.ready != 0;
+        char name[NAME_SIZE] = {};
+        std::memcpy(name, d.nickname, NAME_SIZE - 1);   // 끝 널 보장
+        ps.nickname = name;
+        ps.yaw = d.yaw;
+        ps.pitch = d.pitch;
+        ps.trigger = d.trigger != 0;
+        ps.fireCount = d.fireCount;
+        ps.hits = d.hits;
+        for (int r = 0; r < ROUND_COUNT; ++r) ps.roundHits[r] = d.roundHits[r];
+    }
+}
+
+// 받은 사건을 사건 큐에 넣는다. 개수만큼만 오므로 크기는 4 + 개수 × 14
+void NetSession::ApplyEvents(const Packet& packet) {
+    constexpr size_t kHeadSize = sizeof(PacketHeader) + 1;   // 헤더 + 개수
+    const size_t size = packet.header.size;
+    if (size < kHeadSize || size > sizeof(S2C_EventsPacket)) {
+        std::cout << "[크기 오류] 사건 " << size << "B\n";
+        return;
+    }
+    S2C_EventsPacket p{};
+    std::memcpy(&p, &packet, size);
+    if (p.count > MAX_EVENTS || size != kHeadSize + p.count * sizeof(EventData)) {
+        std::cout << "[크기 오류] 사건 " << size << "B " << int(p.count) << "개\n";
+        return;
+    }
+
+    // 없는 종류가 섞여 있으면 통째로 버린다
+    for (int i = 0; i < p.count; ++i) {
+        if (p.events[i].kind > static_cast<uint8_t>(EventKind::BossShieldBroken)) {
+            std::cout << "[잘못된 사건] 종류 " << int(p.events[i].kind) << "\n";
+            return;
+        }
+    }
+
+    for (int i = 0; i < p.count; ++i) {
+        const EventData& e = p.events[i];
+        events_.push_back({ static_cast<EventKind>(e.kind), glm::vec3(e.x, e.y, e.z) });
     }
 }
 
