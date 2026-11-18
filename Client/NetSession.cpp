@@ -63,6 +63,7 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
         break;
     }
     case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
+        ApplyEvents(packet);
         break;
     default:
         std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
@@ -130,6 +131,27 @@ void NetSession::ApplySnapshot(const S2C_SnapshotPacket& p) {
         ps.fireCount = d.fireCount;
         ps.hits = d.hits;
         for (int r = 0; r < ROUND_COUNT; ++r) ps.roundHits[r] = d.roundHits[r];
+    }
+}
+
+// 받은 사건을 사건 큐에 넣는다. 개수만큼만 오므로 크기는 4 + 개수 × 14
+void NetSession::ApplyEvents(const Packet& packet) {
+    constexpr size_t kHeadSize = sizeof(PacketHeader) + 1;   // 헤더 + 개수
+    const size_t size = packet.header.size;
+    if (size < kHeadSize || size > sizeof(S2C_EventsPacket)) {
+        std::cout << "[크기 오류] 사건 " << size << "B\n";
+        return;
+    }
+    S2C_EventsPacket p{};
+    std::memcpy(&p, &packet, size);
+    if (p.count > MAX_EVENTS || size != kHeadSize + p.count * sizeof(EventData)) {
+        std::cout << "[크기 오류] 사건 " << size << "B " << int(p.count) << "개\n";
+        return;
+    }
+
+    for (int i = 0; i < p.count; ++i) {
+        const EventData& e = p.events[i];
+        events_.push_back({ static_cast<EventKind>(e.kind), glm::vec3(e.x, e.y, e.z) });
     }
 }
 
