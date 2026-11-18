@@ -1,5 +1,6 @@
 #pragma once
 // 서버·클라 공용 패킷 정의. 헤더 3B(크기 2 + 종류 1) + 종류별 본문.
+#include <cstddef>
 #include <cstdint>
 
 constexpr uint16_t SERVER_PORT = 9000;
@@ -151,6 +152,11 @@ static_assert(sizeof(TargetData) == 33, "TargetData 33B");
 static_assert(sizeof(EventData) == 14, "EventData 14B");
 static_assert(sizeof(S2C_SnapshotPacket) == 421, "S2C_SnapshotPacket 421B");
 static_assert(sizeof(S2C_EventsPacket) <= MAX_PACKET_SIZE, "S2C_EventsPacket 크기 초과");
+// 사건 패킷은 count개만 보내므로 앞부분 위치가 고정이어야 한다 (size = 4 + count × 14)
+static_assert(offsetof(S2C_EventsPacket, count) == 3, "S2C_EventsPacket count는 3B 위치");
+static_assert(offsetof(S2C_EventsPacket, events) == 4, "S2C_EventsPacket events는 4B 위치");
+static_assert(sizeof(S2C_EventsPacket) == 4 + MAX_EVENTS * sizeof(EventData), "S2C_EventsPacket 최대 228B");
+static_assert(MAX_EVENTS <= UINT8_MAX, "count(uint8)에 MAX_EVENTS가 들어가야 한다");
 static_assert(sizeof(Packet) == MAX_PACKET_SIZE, "Packet 512B");
 
 // 예: MakeHeader<C2S_AimPacket>(C2S_AIM)

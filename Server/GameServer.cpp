@@ -207,6 +207,7 @@ void BuildSnapshot(S2C_SnapshotPacket& out) {
 }
 
 // 사건 하나: World 사건 → EventData
+static_assert(static_cast<int>(EventKind::BossShieldBroken) <= UINT8_MAX, "EventKind는 EventData::kind(uint8)에 담겨야 한다");
 EventData ToEventData(const GameEvent& e) {
     EventData d{};
     d.kind = static_cast<uint8_t>(e.kind);
