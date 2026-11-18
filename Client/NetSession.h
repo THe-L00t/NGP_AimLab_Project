@@ -4,6 +4,7 @@
 #include "Snapshot.h"
 #include "Net/Protocol.h"
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <mutex>
 #include <string>
@@ -29,6 +30,7 @@ public:
     int slot() const { return slot_; }   // 내 자리 (0~2), 입장 전 -1
 
     // ---- 안병규 (NetSend.cpp) ----
+    void SendAim(float yaw, float pitch);
 
 private:
     std::string nickname_;
@@ -55,4 +57,8 @@ private:
 
     // ---- 안병규 ----
     bool SendLogin();
+    std::chrono::steady_clock::time_point nextAimSend_{};
+    float lastAimYaw_ = 0.0f;
+    float lastAimPitch_ = 0.0f;
+    bool aimSent_ = false;
 };

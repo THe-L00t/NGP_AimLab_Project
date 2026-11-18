@@ -119,6 +119,7 @@ void App::frame() {
 
     scenes_.applyPending(*this);
     if (Scene* scene = scenes_.current()) scene->update(*this, dt);
+    if (net_) net_->SendAim(camera_.yaw(), camera_.pitch());
 
     input_.endFrame();
     glutPostRedisplay();
