@@ -112,7 +112,10 @@ void ProcessPacket(int slot, const Packet& packet) {
     case C2S_FIRE:
         if (const auto* p = As<C2S_FirePacket>(packet)) {
             // 발사 판정·먼저 맞힌 점수 (안병규 11/19)
-            (void)p;
+            if (std::isfinite(p->yaw) && std::isfinite(p->pitch)) {
+                g_world.setAim(slot, p->yaw, p->pitch);
+                g_world.fire(slot);
+            }
         } else {
             LogSizeError(slot, packet);
         }

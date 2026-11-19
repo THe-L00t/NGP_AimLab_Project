@@ -12,6 +12,8 @@ public:
         float yaw = 0.0f;
         float pitch = 0.0f;
         bool triggerHeld = false;
+        int hits = 0;
+        int roundHits[cfg::kRoundCount]{};
     };
 
     struct Target {
@@ -47,6 +49,7 @@ public:
     void start();
     void setAim(float yawDeg, float pitchDeg);
     void fire();
+    void fire(int slot);
     void setTrigger(bool held);
     void setAim(int slot, float yawDeg, float pitchDeg);
     void setTrigger(int slot, bool held);
@@ -98,15 +101,15 @@ private:
     Target makeTrackingTarget();
     void updateTracking(float dt);
     void updateBoss(float dt);
-    void hitBoss(const glm::vec3& point);
+    void hitBoss(const glm::vec3& point, int slot);
     void teleportBoss();
     int bossStage(int hp) const;
     void raiseShield();
     void breakShield();
 
     // 보조
-    glm::vec3 aimDirection() const;
-    void credit();
+    glm::vec3 aimDirection(int slot = kLocalSlot) const;
+    void credit(int slot = kLocalSlot);
     int pickTarget(const glm::vec3& origin, const glm::vec3& dir) const;   // 가장 가까운 표적
     glm::vec3 randomFreePosition(const Bounds& b, float minDistance, int ignoreIndex);
     glm::vec3 randomIn(const Bounds& b);

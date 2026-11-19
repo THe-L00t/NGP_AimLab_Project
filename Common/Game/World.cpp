@@ -97,17 +97,21 @@ void World::setAim(int slot, float yawDeg, float pitchDeg) {
 }
 
 void World::fire() {
-    if (!isPlayerJoined(kLocalSlot) || phase_ != Phase::RoundPlaying) return;
+    fire(kLocalSlot);
+}
+
+void World::fire(int slot) {
+    if (!isPlayerJoined(slot) || phase_ != Phase::RoundPlaying) return;
 
     const glm::vec3 origin = aim::eyePosition();
-    const glm::vec3 dir = aimDirection();
+    const glm::vec3 dir = aimDirection(slot);
 
     switch (round()) {
     case RoundType::GridShot: {
         const int idx = pickTarget(origin, dir);
         if (idx < 0) return;
         events_.push_back({ EventKind::TargetHit, targets_[idx].pos });
-        credit();
+        credit(slot);
         // 다른 자리로 옮긴다
         Target& t = targets_[idx];
         t.pos = randomFreePosition(gridBounds(), t.radius * 3.0f, idx);
@@ -116,7 +120,7 @@ void World::fire() {
     case RoundType::Boss: {
         float t = 0.0f;
         if (boss_.alive && aim::raySphere(origin, dir, boss_.pos, boss_.radius, t)) {
-            hitBoss(origin + dir * t);
+            hitBoss(origin + dir * t, slot);
         }
         break;
     }
@@ -188,6 +192,10 @@ void World::startMatch() {
     failedRound_ = -1;
     score_ = 0;
     for (int& s : roundScore_) s = 0;
+    for (auto& player : playerInputs_) {
+        player.hits = 0;
+        for (int& hits : player.roundHits) hits = 0;
+    }
     startRound(0);
 }
 
@@ -403,12 +411,12 @@ void World::teleportBoss() {
     events_.push_back({ EventKind::BossTeleport, from });
 }
 
-void World::hitBoss(const glm::vec3& point) {
+void World::hitBoss(const glm::vec3& point, int slot) {
     if (boss_.shield) return;   // 보호막이 막는다
 
     const int stageBefore = bossStage(boss_.hp);
     --boss_.hp;
-    credit();
+    credit(slot);
     events_.push_back({ EventKind::BossHit, point });
 
     if (boss_.hp <= 0) {
@@ -428,14 +436,16 @@ void World::hitBoss(const glm::vec3& point) {
 
 // ---- 보조 ----
 
-glm::vec3 World::aimDirection() const {
-    const PlayerInput& input = playerInputs_[kLocalSlot];
+glm::vec3 World::aimDirection(int slot) const {
+    const PlayerInput& input = playerInputs_[slot];
     return aim::direction(input.yaw, input.pitch);
 }
 
-void World::credit() {
+void World::credit(int slot) {
     ++score_;
     ++roundScore_[roundIndex_];
+    ++playerInputs_[slot].hits;
+    ++playerInputs_[slot].roundHits[roundIndex_];
 }
 
 int World::pickTarget(const glm::vec3& origin, const glm::vec3& dir) const {
