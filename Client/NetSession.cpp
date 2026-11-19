@@ -162,6 +162,12 @@ void NetSession::SendAim(float yaw, float pitch) {
         std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(1.0 / 30.0));
 }
 
+void NetSession::SendFire(float yaw, float pitch) {
+    if (state_ != State::LoggedIn || !std::isfinite(yaw) || !std::isfinite(pitch)) return;
+    C2S_FirePacket packet{ MakeHeader<C2S_FirePacket>(C2S_FIRE), yaw, pitch };
+    SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
 void NetSession::CloseNetwork() {
     closing_ = true;
     const SOCKET s = AsSocket(sock_.exchange(static_cast<uintptr_t>(INVALID_SOCKET)));

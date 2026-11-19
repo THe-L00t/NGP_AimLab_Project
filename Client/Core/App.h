@@ -18,6 +18,10 @@ class App {
 public:
     int run(int argc, char** argv);
     void quit();
+    void fire() {
+        if (net_) net_->SendFire(camera_.yaw(), camera_.pitch());
+        else world_.fire();
+    }
 
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }

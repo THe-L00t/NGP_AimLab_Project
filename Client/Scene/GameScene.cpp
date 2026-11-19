@@ -73,7 +73,7 @@ void GameScene::update(App& app, float dt) {
 
     // Shooting·Boss: 클릭 = 한 발
     if (playing && round != RoundType::Tracking && app.input().mousePressed(MouseButton::Left)) {
-        app.world().fire();
+        app.fire();
     }
     // Tracking·보호막: 누르고 있는 동안 판정
     const bool wantTrigger = playing && (round == RoundType::Tracking || round == RoundType::Boss) &&
