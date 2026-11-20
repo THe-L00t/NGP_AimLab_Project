@@ -165,7 +165,11 @@ void NetSession::SendAim(float yaw, float pitch) {
 void NetSession::SendFire(float yaw, float pitch) {
     if (state_ != State::LoggedIn || !std::isfinite(yaw) || !std::isfinite(pitch)) return;
     C2S_FirePacket packet{ MakeHeader<C2S_FirePacket>(C2S_FIRE), yaw, pitch };
-    SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+    if (SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet))) {
+        aimSent_ = true;
+        lastAimYaw_ = yaw;
+        lastAimPitch_ = pitch;
+    }
 }
 
 void NetSession::CloseNetwork() {
