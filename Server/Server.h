@@ -31,6 +31,7 @@ constexpr uint8_t PKT_DISCONNECT = 0;
 struct Input {
     int    slot = -1;
     Packet packet{};
+    uint32_t seq = 0;   // 도착 순서 (PushInput이 매긴다)
 };
 
 void PushInput(const Input& input);       // inputMutex
