@@ -78,8 +78,8 @@ void ProcessPacket(int slot, const Packet& packet) {
     }
 
     switch (type) {
-    case PKT_DISCONNECT:
-        // RemoveClient (한현우 11/23)
+    case PKT_DISCONNECT:   // 수신 끊김·전송 실패 모두 이 알림 하나로 정리한다
+        RemoveClient(slot);
         break;
 
     case C2S_LOGIN:
