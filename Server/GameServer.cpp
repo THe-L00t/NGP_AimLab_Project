@@ -236,3 +236,21 @@ void BuildEvents(std::vector<S2C_EventsPacket>& out) {
         out.push_back(p);
     }
 }
+
+// 연결 정리: World 퇴장, 닉네임 비우기, 목록에서 빼기, 소켓 닫기
+void RemoveClient(int slot) {
+    if (slot < 0 || slot >= MAX_PLAYERS) return;
+
+    g_world.leavePlayer(slot);
+    std::memset(g_nicknames[slot], 0, NAME_SIZE);
+
+    std::unique_ptr<Client> client;
+    clientsMutex.lock();
+    client = std::move(g_clients[slot]);   // 잠금 안에서는 목록에서 빼기만
+    clientsMutex.unlock();
+    if (!client) return;   // 이미 정리된 자리
+
+    closesocket(client->sock);   // 막힌 recv가 풀려 ClientThread가 끝난다
+    if (client->thread.joinable()) client->thread.join();
+    std::cout << "[퇴장] 자리 " << slot << "\n";
+}

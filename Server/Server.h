@@ -36,6 +36,7 @@ struct Input {
 
 void PushInput(const Input& input);       // inputMutex
 void PopInputs(std::vector<Input>& out);  // inputMutex, 통째로 꺼낸다
+void RemoveClient(int slot);              // GameLoop 스레드에서만
 
 // ---- 이태형 (ClientThread.cpp) ----
 void ClientThread(Client* client);
