@@ -23,6 +23,11 @@ public:
         else world_.fire();
     }
 
+    void setTrigger(bool held) {
+        if (net_) net_->SendTrigger(held, camera_.yaw(), camera_.pitch());
+        else world_.setTrigger(held);
+    }
+
     InputManager& input() { return input_; }
     Renderer& renderer() { return renderer_; }
     World& world() { return world_; }

@@ -41,7 +41,7 @@ void GameScene::onEnter(App& app) {
 }
 
 void GameScene::onExit(App& app) {
-    if (triggerHeld_) app.world().setTrigger(false);
+    if (triggerHeld_) app.setTrigger(false);
     triggerHeld_ = false;
 }
 
@@ -79,7 +79,7 @@ void GameScene::update(App& app, float dt) {
     const bool wantTrigger = playing && (round == RoundType::Tracking || round == RoundType::Boss) &&
                              app.input().mouseDown(MouseButton::Left);
     if (wantTrigger != triggerHeld_) {
-        app.world().setTrigger(wantTrigger);
+        app.setTrigger(wantTrigger);
         triggerHeld_ = wantTrigger;
     }
 

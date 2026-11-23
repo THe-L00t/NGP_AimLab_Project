@@ -136,9 +136,12 @@ void World::setTrigger(bool held) {
 void World::setTrigger(int slot, bool held) {
     if (!isPlayerJoined(slot)) return;
     playerInputs_[slot].triggerHeld = held;
-    if (slot == kLocalSlot && !held) {
+    if (!held) {
         // 떼면 진행도 초기화
-        for (auto& t : targets_) t.progress = 0.0f;
+        for (auto& t : targets_) {
+            t.playerProgress[slot] = 0.0f;
+            t.progress = *std::max_element(t.playerProgress, t.playerProgress + kMaxPlayers);
+        }
     }
 }
 
@@ -202,7 +205,7 @@ void World::startMatch() {
 void World::startRound(int index) {
     roundIndex_ = std::clamp(index, 0, cfg::kRoundCount - 1);
     clearEntities();
-    playerInputs_[kLocalSlot].triggerHeld = false;
+    for (auto& input : playerInputs_) input.triggerHeld = false;
 
     switch (round()) {
     case RoundType::GridShot: spawnGridShot(); break;
@@ -236,7 +239,7 @@ bool World::goalReached() const {
 
 void World::resetToTitle() {
     clearEntities();
-    playerInputs_[kLocalSlot].triggerHeld = false;
+    for (auto& input : playerInputs_) input.triggerHeld = false;
     roundIndex_ = 0;
     enterPhase(Phase::Title, 0.0f);
 }
@@ -308,11 +311,20 @@ void World::updateTracking(float dt) {
     }
 
     // 누르고 있을 때 조준 중인 표적
-    const int aimed = playerInputs_[kLocalSlot].triggerHeld ? pickTarget(aim::eyePosition(), aimDirection()) : -1;
+    int aimed[kMaxPlayers];
+    for (int slot = 0; slot < kMaxPlayers; ++slot) {
+        aimed[slot] = isPlayerJoined(slot) && playerInputs_[slot].triggerHeld
+            ? pickTarget(aim::eyePosition(), aimDirection(slot)) : -1;
+    }
 
     for (size_t i = 0; i < targets_.size(); ++i) {
-        if (aimed == (int)i) targets_[i].progress += dt;
-        else targets_[i].progress = 0.0f;
+        Target& target = targets_[i];
+        target.progress = 0.0f;
+        for (int slot = 0; slot < kMaxPlayers; ++slot) {
+            if (aimed[slot] == (int)i) target.playerProgress[slot] += dt;
+            else target.playerProgress[slot] = 0.0f;
+            target.progress = std::max(target.progress, target.playerProgress[slot]);
+        }
     }
 
     for (size_t i = 0; i < targets_.size();) {
@@ -321,7 +333,11 @@ void World::updateTracking(float dt) {
             continue;
         }
         events_.push_back({ EventKind::TargetKilled, targets_[i].pos });
-        credit();
+        int winner = 0;
+        for (int slot = 1; slot < kMaxPlayers; ++slot) {
+            if (targets_[i].playerProgress[slot] > targets_[i].playerProgress[winner]) winner = slot;
+        }
+        credit(winner);
         ++trackKilled_;
         targets_.erase(targets_.begin() + i);
     }
@@ -364,7 +380,10 @@ void World::updateBoss(float dt) {
     if (boss_.shield) {
         // 누른 채 조준하면 게이지가 찬다
         float t = 0.0f;
-        shieldTracked_ = playerInputs_[kLocalSlot].triggerHeld && aim::raySphere(aim::eyePosition(), aimDirection(), boss_.pos, boss_.radius, t);
+        for (int slot = 0; slot < kMaxPlayers; ++slot) {
+            shieldTracked_ = shieldTracked_ || (isPlayerJoined(slot) && playerInputs_[slot].triggerHeld &&
+                aim::raySphere(aim::eyePosition(), aimDirection(slot), boss_.pos, boss_.radius, t));
+        }
         if (shieldTracked_) boss_.shieldHold += dt;
         else boss_.shieldHold = std::max(0.0f, boss_.shieldHold - cfg::kBossShieldDecay * dt);
         if (boss_.shieldHold >= cfg::kBossShieldHold) breakShield();

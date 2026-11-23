@@ -21,6 +21,7 @@ public:
         glm::vec3 vel{ 0.0f };
         float radius = cfg::kTargetRadius;
         float progress = 0.0f;    // Tracking 연속 조준 시간(초)
+        float playerProgress[3]{};
     };
 
     struct Boss {

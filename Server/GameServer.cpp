@@ -124,7 +124,10 @@ void ProcessPacket(int slot, const Packet& packet) {
     case C2S_TRIGGER:
         if (const auto* p = As<C2S_TriggerPacket>(packet)) {
             // 누르기 반영: Tracking·보호막 (안병규 11/23)
-            (void)p;
+            if (p->held <= 1 && std::isfinite(p->yaw) && std::isfinite(p->pitch)) {
+                g_world.setAim(slot, p->yaw, p->pitch);
+                g_world.setTrigger(slot, p->held != 0);
+            }
         } else {
             LogSizeError(slot, packet);
         }

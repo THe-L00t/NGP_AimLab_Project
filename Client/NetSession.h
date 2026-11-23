@@ -32,6 +32,7 @@ public:
     // ---- 안병규 (NetSend.cpp) ----
     void SendAim(float yaw, float pitch);
     void SendFire(float yaw, float pitch);
+    void SendTrigger(bool held, float yaw, float pitch);
 
 private:
     std::string nickname_;
