@@ -13,7 +13,8 @@
 
 class NetSession : public Session {
 public:
-    enum class State { Connecting, Connected, LoggedIn, Failed };
+    // Failed: 접속·입장 실패, Disconnected: 접속한 뒤 서버와 끊김
+    enum class State { Connecting, Connected, LoggedIn, Failed, Disconnected };
 
     explicit NetSession(std::string nickname);
     ~NetSession() override;
@@ -44,6 +45,7 @@ private:
     void ProcessServerPacket(const Packet& packet);   // 받은 패킷 하나 처리 (Main)
     void ApplySnapshot(const S2C_SnapshotPacket& p);   // 받은 스냅샷 → snapshot_ (Main)
     void ApplyEvents(const Packet& packet);            // 받은 사건 → events_ (Main)
+    void HandleDisconnect();                           // 서버와 끊김 반영 (Main)
 
     std::string ip_;
     uint16_t port_ = 0;

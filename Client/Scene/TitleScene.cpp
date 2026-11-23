@@ -25,6 +25,9 @@ void drawLobby(App& app) {
     case NetSession::State::Failed:
         r.drawTextCentered(cx, cy + 72.0f, "Could not join the server", palette::kRed);
         return;
+    case NetSession::State::Disconnected:
+        r.drawTextCentered(cx, cy + 72.0f, "Disconnected from server", palette::kRed);
+        return;
     case NetSession::State::LoggedIn:
         break;
     }

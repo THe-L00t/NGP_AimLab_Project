@@ -12,6 +12,9 @@
 
 namespace {
 SOCKET AsSocket(uintptr_t s) { return static_cast<SOCKET>(s); }
+
+// RecvThread가 수신을 마치면 패킷 큐 끝에 넣는 끊김 표시 (PacketType에 0은 없다)
+constexpr uint8_t kRecvEnded = 0;
 }
 
 NetSession::NetSession(std::string nickname)
@@ -71,6 +74,9 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
     }
     case S2C_EVENTS:         // 받은 사건 반영 (이태형 11/18)
         ApplyEvents(packet);
+        break;
+    case kRecvEnded:         // 서버와 끊김 (이태형 11/23)
+        HandleDisconnect();
         break;
     default:
         std::cout << "[알 수 없는 패킷] 종류 " << int(packet.header.type) << "\n";
@@ -170,6 +176,19 @@ void NetSession::ApplyEvents(const Packet& packet) {
     }
 }
 
+// 서버와 끊김 (Main): 패킷 큐에서 끊김 표시를 꺼냈을 때 불린다
+// 입장 거부처럼 이미 끝낸 접속이면 무시한다
+void NetSession::HandleDisconnect() {
+    const State current = state_;
+    if (current != State::Connected && current != State::LoggedIn) return;
+
+    std::cout << "[끊김] 서버와 연결이 끊겼습니다\n";
+    state_ = State::Disconnected;
+    CloseNetwork();           // 소켓을 닫고 끝난 RecvThread를 join한다
+    slot_ = -1;
+    snapshot_ = Snapshot{};   // 끊긴 판의 상태는 버린다 → 화면은 대기실로 돌아간다
+}
+
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     CloseNetwork();
     aimSent_ = false;
@@ -234,6 +253,14 @@ void NetSession::RecvThread() {
     Packet packet;
     while (RecvPacket(s, packet)) {
         PushPacket(packet);
+    }
+
+    // 끊김 감지 (이태형 11/23): 서버가 닫았거나 오류. CloseNetwork로 직접 닫은 경우는 알리지 않는다
+    // 상태를 여기서 바꾸지 않고 패킷 큐 끝에 표시를 넣어, 먼저 받은 패킷(입장 거부 등)부터 처리되게 한다
+    if (!closing_) {
+        Packet ended{};
+        ended.header = { static_cast<uint16_t>(sizeof(PacketHeader)), kRecvEnded };
+        PushPacket(ended);
     }
 }
 

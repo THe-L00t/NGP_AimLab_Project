@@ -4,6 +4,7 @@
 #include "Core/Palette.h"
 #include "Scene/ResultScene.h"
 #include "Scene/SceneCommon.h"
+#include "Scene/TitleScene.h"
 #include "Game/World.h"
 #include "Snapshot.h"
 #include <algorithm>
@@ -49,6 +50,10 @@ void GameScene::update(App& app, float dt) {
     const Snapshot& s = app.session().snapshot();
     if (s.phase == Phase::FinalResult) {
         app.scenes().change(std::make_unique<ResultScene>());
+        return;
+    }
+    if (s.phase == Phase::Title) {   // 서버와 끊기면 받은 상태를 버려 Title이 된다 → 대기실로
+        app.scenes().change(std::make_unique<TitleScene>());
         return;
     }
 
