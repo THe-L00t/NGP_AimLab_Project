@@ -37,5 +37,12 @@ void ClientThread(Client* client) {
         input.packet = packet;
         PushInput(input);
     }
-    std::cout << "[끊김] 자리 " << slot << "\n";   // 끊김 알림
+    std::cout << "[끊김] 자리 " << slot << "\n";
+
+    // 끊김 알림 → 입력 큐 (이태형 11/24). 받은 패킷들 뒤에 들어가므로 GameLoop는 그것들을 먼저 처리한다
+    // 소켓 닫기·자리 비우기는 여기서 하지 않고 GameLoop의 ProcessPacket → RemoveClient가 한 곳에서 한다
+    Input notice;
+    notice.slot = slot;
+    notice.packet.header = { static_cast<uint16_t>(sizeof(PacketHeader)), PKT_DISCONNECT };
+    PushInput(notice);
 }
