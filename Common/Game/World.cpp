@@ -204,6 +204,11 @@ void World::startMatch() {
 
 void World::startRound(int index) {
     roundIndex_ = std::clamp(index, 0, cfg::kRoundCount - 1);
+    roundPlayers_ = 0;
+    for (bool joined : playerJoined_) {
+        if (joined) ++roundPlayers_;
+    }
+    roundPlayers_ = std::max(1, roundPlayers_);
     clearEntities();
     for (auto& input : playerInputs_) input.triggerHeld = false;
 
@@ -213,8 +218,8 @@ void World::startRound(int index) {
     case RoundType::Boss:     spawnBoss(); break;
     }
 
-    roundGoal_ = round() == RoundType::GridShot ? cfg::kGridGoal
-               : round() == RoundType::Tracking ? cfg::kTrackingGoal
+    roundGoal_ = round() == RoundType::GridShot ? cfg::kGridGoal * roundPlayers_
+               : round() == RoundType::Tracking ? cfg::kTrackingGoal * roundPlayers_
                : 0;
     lastRoundCleared_ = false;
     enterPhase(Phase::RoundIntro, cfg::kRoundIntroTime);
@@ -247,7 +252,7 @@ void World::resetToTitle() {
 bool World::roundFinished() const {
     if (phaseTime_ <= 0.0f) return true;
     switch (round()) {
-    case RoundType::Tracking: return trackKilled_ >= cfg::kTrackingTargets;
+    case RoundType::Tracking: return trackKilled_ >= roundGoal_;
     case RoundType::Boss:     return !boss_.alive;
     default:                  return false;
     }
@@ -263,7 +268,7 @@ void World::clearEntities() {
 // ---- 1라운드 GridShot ----
 
 void World::spawnGridShot() {
-    for (int i = 0; i < cfg::kGridTargets; ++i) {
+    for (int i = 0; i < cfg::kGridTargets + roundPlayers_ - 1; ++i) {
         Target t;
         t.radius = cfg::kTargetRadius;
         t.pos = randomFreePosition(gridBounds(), t.radius * 3.0f, -1);
@@ -290,7 +295,7 @@ World::Target World::makeTrackingTarget() {
 }
 
 void World::spawnTracking() {
-    for (int i = 0; i < cfg::kTrackingTargets; ++i) {
+    for (int i = 0; i < cfg::kTrackingTargets + roundPlayers_ - 1; ++i) {
         targets_.push_back(makeTrackingTarget());
     }
 }
@@ -339,7 +344,12 @@ void World::updateTracking(float dt) {
         }
         credit(winner);
         ++trackKilled_;
-        targets_.erase(targets_.begin() + i);
+        if (trackKilled_ + static_cast<int>(targets_.size()) <= roundGoal_) {
+            targets_[i] = makeTrackingTarget();
+            ++i;
+        } else {
+            targets_.erase(targets_.begin() + i);
+        }
     }
 }
 
@@ -349,7 +359,7 @@ void World::spawnBoss() {
     boss_ = Boss{};
     boss_.alive = true;
     boss_.radius = cfg::kBossRadius;
-    boss_.maxHp = cfg::kBossHp;
+    boss_.maxHp = (cfg::kBossHp * roundPlayers_ + kMaxPlayers - 1) / kMaxPlayers;
     boss_.hp = boss_.maxHp;
 
     Bounds b = bossBounds();
@@ -531,7 +541,7 @@ bool World::roundCleared() const {
 int World::trackingRemaining() const {
     const bool trackingActive = round() == RoundType::Tracking &&
                                 (phase_ == Phase::RoundIntro || phase_ == Phase::RoundPlaying);
-    return trackingActive ? std::max(0, cfg::kTrackingTargets - trackKilled_) : 0;
+    return trackingActive ? std::max(0, roundGoal_ - trackKilled_) : 0;
 }
 
 float World::shieldProgress() const {

@@ -125,6 +125,7 @@ private:
     Phase phase_ = Phase::Title;
     float phaseTime_ = 0.0f;
     int roundIndex_ = 0;
+    int roundPlayers_ = 1;
 
     static constexpr int kMaxPlayers = 3;
     static constexpr int kLocalSlot = 0;   // 1인 모드 자리

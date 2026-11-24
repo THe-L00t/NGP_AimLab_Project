@@ -27,12 +27,12 @@ constexpr float kTargetRadius = 0.8f;
 // 1라운드 Shooting
 constexpr float kGridDuration = 30.0f;
 constexpr int kGridTargets = 3;
-constexpr int kGridGoal = 20;
+constexpr int kGridGoal = 12;
 
 // 2라운드 Tracking
 constexpr float kTrackingDuration = 40.0f;
 constexpr int kTrackingTargets = 6;
-constexpr int kTrackingGoal = 4;
+constexpr int kTrackingGoal = 10;
 constexpr float kTrackHoldTime = 2.0f;   // 처치까지 조준 시간
 constexpr float kTrackSpeedMin = 2.0f;
 constexpr float kTrackSpeedMax = 5.0f;
@@ -40,7 +40,7 @@ constexpr float kTrackTurnRate = 0.3f;   // 초당 방향 전환 확률
 
 // 3라운드 Boss
 constexpr float kBossDuration = 75.0f;
-constexpr int kBossHp = 34;
+constexpr int kBossHp = 100;
 constexpr float kBossRadius = 1.6f;
 constexpr float kBossSpeed = 3.0f;
 constexpr float kBossTeleportMinDistance = 6.0f;
