@@ -130,13 +130,22 @@ void NetSession::RecvThread() {
     }
 }
 
+bool NetSession::SendToServer(const char* data, int size) {
+    const SOCKET sock = AsSocket(sock_.load());
+    if (SendPacket(sock, data, size)) return true;
+    state_ = State::Failed;
+    shutdown(sock, SD_BOTH);
+    std::cout << "패킷 전송 실패\n";
+    return false;
+}
+
 bool NetSession::SendLogin() {
     if (nickname_.empty() || nickname_.size() >= NAME_SIZE) return false;
 
     C2S_LoginPacket packet{};
     packet.header = MakeHeader<C2S_LoginPacket>(C2S_LOGIN);
     std::memcpy(packet.nickname, nickname_.data(), nickname_.size());
-    return SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+    return SendToServer(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 bool NetSession::SendReady(bool ready) {
@@ -144,7 +153,7 @@ bool NetSession::SendReady(bool ready) {
     if (current != State::Connected && current != State::LoggedIn) return false;
 
     C2S_ReadyPacket packet{ MakeHeader<C2S_ReadyPacket>(C2S_READY), static_cast<uint8_t>(ready) };
-    return SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet));
+    return SendToServer(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void NetSession::SendAim(float yaw, float pitch) {
@@ -153,7 +162,7 @@ void NetSession::SendAim(float yaw, float pitch) {
     if (now < nextAimSend_ || (aimSent_ && yaw == lastAimYaw_ && pitch == lastAimPitch_)) return;
 
     C2S_AimPacket packet{ MakeHeader<C2S_AimPacket>(C2S_AIM), yaw, pitch };
-    if (SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet))) {
+    if (SendToServer(reinterpret_cast<const char*>(&packet), sizeof(packet))) {
         aimSent_ = true;
         lastAimYaw_ = yaw;
         lastAimPitch_ = pitch;
@@ -165,7 +174,7 @@ void NetSession::SendAim(float yaw, float pitch) {
 void NetSession::SendFire(float yaw, float pitch) {
     if (state_ != State::LoggedIn || !std::isfinite(yaw) || !std::isfinite(pitch)) return;
     C2S_FirePacket packet{ MakeHeader<C2S_FirePacket>(C2S_FIRE), yaw, pitch };
-    if (SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet))) {
+    if (SendToServer(reinterpret_cast<const char*>(&packet), sizeof(packet))) {
         aimSent_ = true;
         lastAimYaw_ = yaw;
         lastAimPitch_ = pitch;
@@ -175,7 +184,7 @@ void NetSession::SendFire(float yaw, float pitch) {
 void NetSession::SendTrigger(bool held, float yaw, float pitch) {
     if (state_ != State::LoggedIn || !std::isfinite(yaw) || !std::isfinite(pitch)) return;
     C2S_TriggerPacket packet{ MakeHeader<C2S_TriggerPacket>(C2S_TRIGGER), static_cast<uint8_t>(held), yaw, pitch };
-    if (SendPacket(AsSocket(sock_.load()), reinterpret_cast<const char*>(&packet), sizeof(packet))) {
+    if (SendToServer(reinterpret_cast<const char*>(&packet), sizeof(packet))) {
         aimSent_ = true;
         lastAimYaw_ = yaw;
         lastAimPitch_ = pitch;

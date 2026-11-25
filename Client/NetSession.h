@@ -59,6 +59,7 @@ private:
 
     // ---- 안병규 ----
     bool SendLogin();
+    bool SendToServer(const char* data, int size);
     std::chrono::steady_clock::time_point nextAimSend_{};
     float lastAimYaw_ = 0.0f;
     float lastAimPitch_ = 0.0f;
