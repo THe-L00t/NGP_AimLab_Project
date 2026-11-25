@@ -22,6 +22,30 @@ void LogSizeError(int slot, const Packet& packet) {
               << " 크기 " << packet.header.size << "\n";
 }
 
+const char* PhaseName(Phase p) {
+    switch (p) {
+    case Phase::Title:        return "대기실";
+    case Phase::RoundIntro:   return "카운트다운";
+    case Phase::RoundPlaying: return "진행";
+    case Phase::RoundSummary: return "라운드 결과";
+    case Phase::FinalResult:  return "최종 결과";
+    }
+    return "?";
+}
+
+// 단계가 바뀌면 서버 창에 남긴다 (대기실 복귀 점검용)
+void LogPhaseChange() {
+    static Phase last = Phase::Title;
+    const Phase now = g_world.phase();
+    if (now == last) return;
+    int players = 0;
+    for (int slot = 0; slot < MAX_PLAYERS; ++slot) players += g_world.playerInput(slot) ? 1 : 0;
+
+    std::cout << "[단계] " << PhaseName(last) << " → " << PhaseName(now)
+              << " (라운드 " << g_world.roundIndex() + 1 << ", 인원 " << players << "명)\n";
+    last = now;
+}
+
 // 로그인: 닉네임 정리 후 자리 배정
 void HandleLogin(int slot, const C2S_LoginPacket& p) {
     if (g_world.playerInput(slot)) {   // 이미 들어온 자리: 닉네임·자리 그대로
@@ -135,6 +159,7 @@ void ProcessPacket(int slot, const Packet& packet) {
 
 // 스냅샷: 진행 단계·시간·라운드·점수
 void BuildSnapshot(S2C_SnapshotPacket& out) {
+    LogPhaseChange();
     out = {};
     out.header = MakeHeader<S2C_SnapshotPacket>(S2C_SNAPSHOT);
 
