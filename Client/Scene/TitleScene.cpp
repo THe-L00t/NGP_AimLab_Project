@@ -23,10 +23,10 @@ void drawLobby(App& app) {
         r.drawTextCentered(cx, cy + 72.0f, "Joining...", palette::kGray);
         return;
     case NetSession::State::Failed:
-        r.drawTextCentered(cx, cy + 72.0f, "Could not join the server", palette::kRed);
+        r.drawTextCentered(cx, cy + 72.0f, "Could not join the server    Press C to retry", palette::kRed);
         return;
     case NetSession::State::Disconnected:
-        r.drawTextCentered(cx, cy + 72.0f, "Disconnected from server", palette::kRed);
+        r.drawTextCentered(cx, cy + 72.0f, "Disconnected from server    Press C to reconnect", palette::kRed);
         return;
     case NetSession::State::LoggedIn:
         break;
@@ -72,6 +72,11 @@ void TitleScene::update(App& app, float) {
     scene::updateLook(app);
     scene::handleCommonKeys(app, true);
 
+    // 재접속 (이태형 11/25): 끊겼거나 입장에 실패했으면 C로 같은 서버에 다시 접속한다
+    if (app.net() && app.input().keyPressed('c')) {
+        app.net()->Reconnect();
+    }
+
     if (app.input().keyPressed('r')) {
         if (!app.net()) {   // 1인 모드: 바로 시작
             app.world().start();
@@ -100,6 +105,11 @@ void TitleScene::render(App& app) {
 
     scene::drawCrosshair(app);
     scene::drawInfoOverlay(app);
-    scene::drawHint(app, scene::format("R: %s    2: crosshair color    3: crosshair shape    M: info    Esc: release mouse    Q: quit",
-                                       app.net() ? "ready" : "start"));
+    // 네트워크 모드에서 끊겼거나 입장에 실패했으면 R(준비) 대신 C(재접속)를 알려 준다
+    const char* key = "R: start";
+    if (app.net()) {
+        const NetSession::State st = app.net()->state();
+        key = st == NetSession::State::Failed || st == NetSession::State::Disconnected ? "C: reconnect" : "R: ready";
+    }
+    scene::drawHint(app, scene::format("%s    2: crosshair color    3: crosshair shape    M: info    Esc: release mouse    Q: quit", key));
 }
