@@ -26,6 +26,7 @@ public:
     // ---- 이태형 (NetSession.cpp · PacketQueue.cpp) ----
     bool StartNetwork(const char* ip, uint16_t port);   // 재시도에도 사용
     void CloseNetwork();
+    bool Reconnect();   // 끊김·입장 실패 뒤 같은 주소로 다시 접속 (Main)
     bool SendReady(bool ready);
 
     State state() const { return state_; }

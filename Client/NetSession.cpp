@@ -193,6 +193,14 @@ bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     CloseNetwork();
     aimSent_ = false;
     nextAimSend_ = {};
+
+    // 이전 접속에서 남은 것을 비운다 (재접속 이태형 11/25). 이전 RecvThread는 위 CloseNetwork에서 끝났다
+    std::vector<Packet> stale;
+    PopPackets(stale);   // 꺼내지 않은 끊김 표시가 새 접속에 처리되지 않게
+    slot_ = -1;
+    snapshot_ = Snapshot{};
+    events_.clear();
+
     ip_ = ip;
     port_ = port;
 
@@ -207,6 +215,18 @@ bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     state_ = State::Connecting;
     recvThread_ = std::thread(&NetSession::RecvThread, this);
     return true;
+}
+
+// 재접속 (이태형 11/25, Main): 끊겼거나 입장에 실패한 뒤 처음 접속한 주소로 다시 접속한다
+// 이전 접속 정리(CloseNetwork)는 StartNetwork가 먼저 한다
+bool NetSession::Reconnect() {
+    const State current = state_;
+    if (current != State::Failed && current != State::Disconnected) return false;   // 접속·입장 중에는 하지 않는다
+    if (ip_.empty()) return false;
+
+    const std::string ip = ip_;   // StartNetwork가 ip_를 다시 채우므로 복사해 둔다
+    std::cout << "[재접속] " << ip << ":" << port_ << "\n";
+    return StartNetwork(ip.c_str(), port_);
 }
 
 void NetSession::RecvThread() {
