@@ -35,6 +35,7 @@ bool World::leavePlayer(int slot) {
     }
     setReady(slot, false);
     setTrigger(slot, false);
+    departedScores_[slot] += playerInputs_[slot].hits;
     playerInputs_[slot] = {};
     playerReady_[slot] = false;
     playerJoined_[slot] = false;
@@ -195,6 +196,7 @@ void World::startMatch() {
     failedRound_ = -1;
     score_ = 0;
     for (int& s : roundScore_) s = 0;
+    for (int& points : departedScores_) points = 0;
     for (auto& player : playerInputs_) {
         player.hits = 0;
         for (int& hits : player.roundHits) hits = 0;
@@ -528,6 +530,27 @@ void World::bounceInside(glm::vec3& pos, glm::vec3& vel, float radius, const Bou
 
 const World::PlayerInput* World::playerInput(int slot) const {
     return isPlayerJoined(slot) ? &playerInputs_[slot] : nullptr;
+}
+
+int World::playerScore(int slot) const {
+    return validSlot(slot) ? departedScores_[slot] + playerInputs_[slot].hits : 0;
+}
+
+float World::contribution(int slot) const {
+    return score_ > 0 ? 100.0f * static_cast<float>(playerScore(slot)) / static_cast<float>(score_) : 0.0f;
+}
+
+int World::mvpSlot() const {
+    int mvp = -1;
+    int bestScore = 0;
+    for (int slot = 0; slot < kMaxPlayers; ++slot) {
+        const int points = playerScore(slot);
+        if (points > bestScore) {
+            bestScore = points;
+            mvp = slot;
+        }
+    }
+    return mvp;
 }
 
 float World::phaseTimeLeft() const {

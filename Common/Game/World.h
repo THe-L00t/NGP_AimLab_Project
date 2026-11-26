@@ -68,6 +68,9 @@ public:
     const Boss& boss() const { return boss_; }
     const PlayerInput* playerInput(int slot) const;
     int score() const { return score_; }
+    int playerScore(int slot) const;
+    float contribution(int slot) const;
+    int mvpSlot() const;
     int roundScore(int round) const { return roundScore_[round]; }
     int roundGoal() const { return roundGoal_; }   // Boss는 0
     bool roundCleared() const;
@@ -134,6 +137,7 @@ private:
     PlayerInput playerInputs_[kMaxPlayers]{};
     bool playerJoined_[kMaxPlayers]{};
     bool playerReady_[kMaxPlayers]{};
+    int departedScores_[kMaxPlayers]{};
 
     std::vector<Target> targets_;
     Boss boss_;
