@@ -30,7 +30,9 @@ void HandleLogin(int slot, const C2S_LoginPacket& p) {
     }
     if (g_world.phase() != Phase::Title) {   // 게임 중에는 입장 불가
         std::cout << "[로그인 실패] 자리 " << slot << " 게임 중\n";
-        // 실패 응답 slot -1 (이태형 입장 거부)
+        // 실패 응답 slot -1 (이태형 입장 거부 11/26). 클라는 받으면 연결을 닫는다
+        const S2C_LoginResultPacket reject{ MakeHeader<S2C_LoginResultPacket>(S2C_LOGIN_RESULT), -1 };
+        SendTo(slot, reinterpret_cast<const char*>(&reject), sizeof(reject));
         return;
     }
 
@@ -43,7 +45,9 @@ void HandleLogin(int slot, const C2S_LoginPacket& p) {
 
     if (!g_world.joinPlayer(slot)) {
         std::cout << "[로그인 실패] 자리 " << slot << "\n";
-        // 실패 응답 slot -1 (이태형 입장 거부)
+        // 실패 응답 slot -1 (이태형 입장 거부 11/26)
+        const S2C_LoginResultPacket reject{ MakeHeader<S2C_LoginResultPacket>(S2C_LOGIN_RESULT), -1 };
+        SendTo(slot, reinterpret_cast<const char*>(&reject), sizeof(reject));
         return;
     }
     std::memcpy(g_nicknames[slot], name, NAME_SIZE);

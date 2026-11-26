@@ -51,8 +51,8 @@ void NetSession::ProcessServerPacket(const Packet& packet) {
             break;
         }
         std::memcpy(&result, &packet, sizeof(result));
-        if (result.slot < 0) {   // 입장 거부: 자리 없음
-            std::cout << "[입장 거부] 자리 없음\n";
+        if (result.slot < 0) {   // 입장 거부: 자리 없음·게임 중
+            std::cout << "[입장 거부] 자리가 없거나 게임 중입니다\n";
             state_ = State::Failed;
             CloseNetwork();   // 서버가 기다리지 않도록 바로 닫는다
             break;
