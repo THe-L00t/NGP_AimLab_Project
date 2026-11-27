@@ -269,13 +269,18 @@ void RemoveClient(int slot) {
     g_world.leavePlayer(slot);
     std::memset(g_nicknames[slot], 0, NAME_SIZE);
 
+    clientsMutex.lock();
+    Client* c = g_clients[slot].get();   // 지우는 건 이 스레드뿐이라 잠금 밖에서도 유효하다
+    clientsMutex.unlock();
+    if (!c) return;   // 이미 정리된 자리
+
+    closesocket(c->sock);   // 막힌 recv가 풀려 ClientThread가 끝난다
+    if (c->thread.joinable()) c->thread.join();
+
+    // 스레드가 끝난 뒤 자리를 비운다: 그 전에 넣은 끊김 알림은 모두 이 연결 번호를 갖는다
     std::unique_ptr<Client> client;
     clientsMutex.lock();
-    client = std::move(g_clients[slot]);   // 잠금 안에서는 목록에서 빼기만
+    client = std::move(g_clients[slot]);
     clientsMutex.unlock();
-    if (!client) return;   // 이미 정리된 자리
-
-    closesocket(client->sock);   // 막힌 recv가 풀려 ClientThread가 끝난다
-    if (client->thread.joinable()) client->thread.join();
-    std::cout << "[퇴장] 자리 " << slot << "\n";
+    std::cout << "[퇴장] 자리 " << slot << " (연결 " << client->id << ")\n";
 }

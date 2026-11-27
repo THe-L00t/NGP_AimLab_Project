@@ -14,6 +14,7 @@ struct Client {
     SOCKET      sock = INVALID_SOCKET;
     int         slot = -1;
     std::thread thread;   // ClientThread
+    uint32_t    id = 0;   // 연결 번호 (접속마다 새로 매긴다)
 };
 
 // 칸 번호 = 자리 번호, 빈 칸은 nullptr

@@ -10,6 +10,7 @@ std::mutex clientsMutex;
 namespace {
 SOCKET      g_listenSock = INVALID_SOCKET;
 std::thread g_gameLoopThread;
+uint32_t    g_lastClientId = 0;   // AcceptLoop만 쓴다
 }
 
 //bool ProcessReadyPacket(World& world, int slot, const Packet& packet) {
@@ -103,6 +104,7 @@ void AcceptLoop() {
             g_clients[i] = std::make_unique<Client>();
             g_clients[i]->sock = sock;
             g_clients[i]->slot = i;
+            g_clients[i]->id = ++g_lastClientId;
             client = g_clients[i].get();
             break;
         }
