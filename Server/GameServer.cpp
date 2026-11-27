@@ -102,9 +102,18 @@ void ProcessPacket(int slot, const Packet& packet) {
     }
 
     switch (type) {
-    case PKT_DISCONNECT:   // 수신 끊김·전송 실패 모두 이 알림 하나로 정리한다
-        RemoveClient(slot);
-        break;
+    case PKT_DISCONNECT: {   // 수신 끊김·전송 실패 모두 이 알림 하나로 정리한다
+        uint32_t id = 0;
+        std::memcpy(&id, packet.body, sizeof(id));   // PushInput이 담은 연결 번호
+        uint32_t current = 0;
+        clientsMutex.lock();
+        if (slot >= 0 && slot < MAX_PLAYERS && g_clients[slot]) current = g_clients[slot]->id;
+        clientsMutex.unlock();
+
+        if (current == id) RemoveClient(slot);
+        else if (current != 0) std::cout << "[지난 연결 끊김 알림 무시] 자리 " << slot << " (연결 " << id << ", 지금 연결 " << current << ")\n";
+        break;   // current == 0: 이미 정리된 자리
+    }
 
     case C2S_LOGIN:
         if (const auto* p = As<C2S_LoginPacket>(packet)) {
