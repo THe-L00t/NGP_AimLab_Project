@@ -47,11 +47,13 @@ private:
     void ApplySnapshot(const S2C_SnapshotPacket& p);   // 받은 스냅샷 → snapshot_ (Main)
     void ApplyEvents(const Packet& packet);            // 받은 사건 → events_ (Main)
     void HandleDisconnect();                           // 서버와 끊김 반영 (Main)
+    void CheckJoinTimeout();                           // 입장 결과를 너무 오래 기다리면 실패 (Main)
 
     std::string ip_;
     uint16_t port_ = 0;
     bool wsaReady_ = false;
     int slot_ = -1;   // 입장 결과로 받은 내 자리 (Main만 씀)
+    std::chrono::steady_clock::time_point joinDeadline_{};   // 입장 결과를 기다리는 끝 시각, 접속마다 새로 (Main만 씀)
 
     std::atomic<uintptr_t> sock_{ ~uintptr_t(0) };  //SOCKET, ~0 = INVALID_SOCKET
     std::atomic<bool> closing_{ false };

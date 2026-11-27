@@ -15,6 +15,9 @@ SOCKET AsSocket(uintptr_t s) { return static_cast<SOCKET>(s); }
 
 // RecvThread가 수신을 마치면 패킷 큐 끝에 넣는 끊김 표시 (PacketType에 0은 없다)
 constexpr uint8_t kRecvEnded = 0;
+
+// 접속한 뒤 입장 결과를 기다리는 시간
+constexpr auto kJoinTimeout = std::chrono::seconds(5);
 }
 
 NetSession::NetSession(std::string nickname)
@@ -29,6 +32,7 @@ void NetSession::update(float) {
     std::vector<Packet> packets;
     PopPackets(packets);   // RecvThread가 넣어 둔 패킷을 통째로 꺼낸다
     for (const Packet& packet : packets) ProcessServerPacket(packet);
+    CheckJoinTimeout();
 }
 
 // 받아 둔 사건을 화면에 넘기고 비운다 (Main)
@@ -189,6 +193,23 @@ void NetSession::HandleDisconnect() {
     snapshot_ = Snapshot{};   // 끊긴 판의 상태는 버린다 → 화면은 대기실로 돌아간다
 }
 
+// 입장 결과 기다리기 (이태형 11/27, Main): 접속은 됐는데 결과가 오지 않으면
+// (서버 멈춤·다른 프로그램 등) Joining...에 묶이지 않게 실패로 보고 C로 다시 접속할 수 있게 한다
+void NetSession::CheckJoinTimeout() {
+    if (state_ != State::Connected) return;   // Connected 뒤로는 Main만 상태를 바꾼다
+
+    const auto now = std::chrono::steady_clock::now();
+    if (joinDeadline_ == std::chrono::steady_clock::time_point{}) {   // 이번 접속에서 처음 본 때부터 잰다
+        joinDeadline_ = now + kJoinTimeout;
+        return;
+    }
+    if (now < joinDeadline_) return;
+
+    std::cout << "[입장 실패] 입장 결과가 오지 않습니다\n";
+    state_ = State::Failed;
+    CloseNetwork();   // 늦게 오는 결과는 받지 않는다
+}
+
 bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     CloseNetwork();
     aimSent_ = false;
@@ -200,6 +221,7 @@ bool NetSession::StartNetwork(const char* ip, uint16_t port) {
     slot_ = -1;
     snapshot_ = Snapshot{};
     events_.clear();
+    joinDeadline_ = {};
 
     ip_ = ip;
     port_ = port;
